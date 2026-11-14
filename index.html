@@ -1,390 +1,232 @@
-<section class="dashboard" id="dashboard">
-  <div class="panel">
-    <div class="welcome">
-      <div>
-        <h2 class="panel-title">WELCOME TO THE CREW, <span id="welcomeName"></span>!</h2>
-        <p class="panel-sub">Your astronaut training hub is ready. Choose a mission below.</p>
-      </div>
-      <div class="player-chip">
-        <div class="player-avatar" id="playerAvatar">👨🏻‍🚀</div>
-        <div>
-          <div class="player-status">CURRENT CREW MEMBER</div>
-          <div id="playerLabel" style="font-weight:900; font-size:15px;">Explorer</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="missions">
-      <article class="mission">
-        <div class="m-icon">🛰️</div>
-        <h3>MISSION 01</h3>
-        <p>Defying Gravity is zero-gravity movement training for the satellite rescue mission below.</p>
-        <button type="button" onclick="openMission('minigames/defying-gravity/index.html', 'defying-gravity')">PLAY NOW</button>
-      </article>
-
-      <article class="mission">
-        <div class="m-icon">🔧</div>
-        <h3>MISSION 02</h3>
-        <p>Apply what you learned in zero-g movement to repair the drifting satellite.</p>
-        <button type="button" onclick="openMission('minigames/satellite-rescue/index.html', 'satellite-rescue')">PLAY NOW</button>
-      </article>
-
-      <article class="mission">
-        <div class="m-icon">📡</div>
-        <h3>KNOWLEDGE CHECK</h3>
-        <p>Answer the space knowledge quiz and show what you've learned.</p>
-        <button type="button" onclick="openMission('quiz.html', 'quiz')">START QUIZ</button>
-      </article>
-    </div>
-
-    <div class="mission-planner-panel" style="margin-top:22px; border:1px solid var(--line); background:#121a36bb; border-radius:14px; padding:16px;">
-      <div class="panel-title" style="margin-bottom:8px;">MISSION PLANNER</div>
-
-      <p class="panel-sub" style="margin-bottom:14px;">
-        Recommended progression: train in Defying Gravity first, then launch the Satellite Repair mission.
-      </p>
-
-      <div class="planner-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
-        <div>
-          <label>OBJECTIVE</label>
-          <select id="plannerObjective">
-            <option>Satellite Repair</option>
-          </select>
-        </div>
-
-        <div>
-          <label>SPACECRAFT</label>
-          <select id="plannerShip">
-            <option>Standard Research Craft</option>
-          </select>
-        </div>
-
-        <div>
-          <label>PAYLOAD</label>
-          <select id="plannerPayload">
-            <option>Repair Toolkit</option>
-          </select>
-        </div>
-
-        <div>
-          <label>POWER</label>
-          <select id="plannerPower">
-            <option>Hybrid Power System</option>
-          </select>
-        </div>
-
-        <div>
-          <label>ORBIT</label>
-          <select id="plannerOrbit">
-            <option>Medium Earth Orbit (MEO)</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="missionSummary" style="margin-top:14px;padding:12px 14px;background:#10162d;border:1px solid #4f4d78;color:#e6e4ff;font-size:13px;line-height:1.6;border-radius:12px;"></div>
-      <div id="missionWarnings" style="margin-top:10px;color:#ffb4c9;font-weight:700;font-size:12px;min-height:18px;"></div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
-        <button class="primary" type="button" onclick="saveCurrentMissionPlan()" style="margin-top:0;width:auto;min-width:160px;">SAVE PLAN</button>
-        <button class="secondary" type="button" onclick="launchCurrentMission()" style="margin-top:0;width:auto;min-width:160px;">LAUNCH MISSION</button>
-      </div>
-    </div>
-
-    <div class="upgrade-panel" style="margin-top:22px; border:1px solid var(--line); background:#121a36bb; border-radius:14px; padding:16px;">
-      <div class="panel-title" style="margin-bottom:14px;">UPGRADE SHOP</div>
-      <div id="upgradeShop" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;"></div>
-    </div>
-
-    <div class="mission-history-panel" style="margin-top:22px; border:1px solid var(--line); background:#121a36bb; border-radius:14px; padding:16px;">
-      <div class="panel-title" style="margin-bottom:14px;">MISSION HISTORY</div>
-      <div id="missionHistoryList" style="display:grid;gap:8px;"></div>
-    </div>
-
-    <p class="dashboard-note">Defying Gravity is the training mission for zero-g movement control. Satellite Rescue is the practical follow-up mission where those skills are applied.</p>
-    <button class="secondary" style="margin-top:18px" onclick="logout()">↶ BACK TO PROFILE</button>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Mission: Beyond Earth</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap');
+:root{--ink:#f4f0ff;--muted:#b8b2d8;--purple:#9c7bff;--cyan:#78e7f2;--pink:#ff9fc9;--panel:#171832;--panel2:#222448;--line:#55517d;--gold:#ffe49a}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;color:var(--ink);font-family:Nunito, sans-serif;background:#090d22;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-3;background:radial-gradient(ellipse at 50% 100%,#29336b 0%,#111735 44%,#080b1c 100%)}
+#stars{position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(2px 2px at 20px 30px,#fff 45%,transparent 55%),radial-gradient(1px 1px at 80px 110px,#a9eaff 45%,transparent 55%),radial-gradient(1.5px 1.5px at 130px 80px,#f8d7ff 45%,transparent 55%),radial-gradient(1.5px 1.5px at 180px 180px,#d4f8ff 45%,transparent 55%),radial-gradient(2px 2px at 260px 70px,#fff 45%,transparent 55%),radial-gradient(1px 1px at 310px 140px,#b5cbff 45%,transparent 55%),radial-gradient(1.5px 1.5px at 360px 90px,#fff 45%,transparent 55%),radial-gradient(1px 1px at 460px 120px,#dfe9ff 45%,transparent 55%)}
+@keyframes twinkle{to{opacity:.35;transform:translateY(8px)}}
+.planet{position:fixed;z-index:-1;border-radius:50%;pointer-events:none}.planet.one{width:170px;height:170px;right:7%;top:13%;background:linear-gradient(135deg,#d9a5ff,#7457bb 65%,#443a83);box-shadow:0 0 35px rgba(159,124,255,.4)}.planet.two{width:120px;height:120px;left:8%;bottom:18%;background:linear-gradient(135deg,#a6e8ff,#4b80d6 58%,#1a315f);box-shadow:0 0 30px rgba(120,231,242,.28);animation:twinkle 4s ease-in-out infinite alternate}
+header{max-width:1180px;margin:auto;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:12px}.brand-icon{width:45px;height:45px;display:grid;place-items:center;background:#28264f;border:3px solid #a58cff;box-shadow:4px 4px 0 #080b1c;font-size:24px}.brand-name{font-family:'Press Start 2P';font-size:12px;line-height:1.6}.brand-name span{display:block;color:var(--cyan)}
+.status{font-size:12px;font-weight:900;letter-spacing:1.5px;color:var(--cyan);border:1px solid #557b9b;padding:9px 12px;background:#121a36bb}
+main{max-width:1180px;margin:10px auto 60px;padding:0 28px}
+.hero{text-align:center;padding:30px 10px 24px}.eyebrow{color:var(--cyan);font-weight:900;letter-spacing:4px;font-size:12px}.hero h1{font-family:'Press Start 2P';font-size:clamp(24px,4vw,46px);line-height:1.3;margin:16px 0 12px}.hero h1 span{color:var(--cyan)}.hero p{max-width:760px;margin:0 auto;color:#d6d0f4;font-size:17px;line-height:1.7}.pixel-rule{height:8px;max-width:650px;margin:25px auto;background:repeating-linear-gradient(90deg,#9d80ff 0 18px,transparent 18px 23px,#70dce9 23px 35px,transparent 35px 40px);opacity:.8}
+.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:stretch}.panel{background:linear-gradient(145deg,#202144ed,#14172fee);border:2px solid var(--line);box-shadow:8px 8px 0 #070a1f;border-radius:18px;padding:22px 22px 20px}.panel-title{font-family:'Press Start 2P';font-size:13px;line-height:1.7;color:var(--gold);margin:0 0 8px}.panel-sub{color:var(--muted);font-size:13px;margin:0 0 22px}
+label{display:block;font-size:12px;font-weight:900;letter-spacing:1.3px;color:#d9d5f4;margin:16px 0 8px} 
+input{width:100%;background:#0d1128;color:white;border:2px solid #55517d;padding:14px 15px;font:700 15px Nunito;outline:none;border-radius:10px}input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #78e7f222}input::placeholder{color:#7b7aa1}
+.gender{display:grid;grid-template-columns:1fr 1fr;gap:12px}.gender-option{cursor:pointer;border:2px solid #55517d;background:#171a38;padding:13px 10px;text-align:center;transition:.15s;border-radius:12px}.gender-option.selected{border-color:var(--cyan);box-shadow:0 0 0 3px #78e7f222;background:#1a1e42}.gender-option input{display:none}.avatar{display:block;font-size:32px;margin-bottom:6px}.gender-option strong{font-size:12px;letter-spacing:.8px;text-transform:uppercase}
+.primary,.secondary{width:100%;border:0;padding:15px 18px;font-family:'Press Start 2P';font-size:11px;line-height:1.7;cursor:pointer;transition:transform .12s,filter .12s;border-radius:12px}.primary{margin-top:20px;background:linear-gradient(180deg,#7fe8ff,#63c6db);color:#0d1630;box-shadow:0 6px 0 #2a6680}.secondary{background:linear-gradient(180deg,#312d59,#1d1a39);color:var(--ink);border:2px solid #695ea6;box-shadow:0 6px 0 #0f1024}.primary:hover,.secondary:hover{transform:translateY(-1px);filter:brightness(1.04)}
+.message{min-height:20px;color:var(--pink);font-size:12px;font-weight:800;margin-top:10px}.tiny{font-size:11px;color:#9895b9;line-height:1.6;margin-top:12px}
+.preview{display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}.preview-top{position:relative;z-index:1}.scene{height:205px;margin:10px -5px 18px;position:relative;overflow:hidden;border-radius:16px;background:linear-gradient(180deg,#1a1d40,#131730)}.moon{position:absolute;right:16%;top:24px;width:57px;height:57px;border-radius:50%;background:#d8d3ff;box-shadow:inset -10px -7px #9d9acb,0 0 22px #c5bdff88}.hill{position:absolute;bottom:-26px;width:140%;height:125px;border-radius:50% 50% 0 0;background:linear-gradient(180deg,#2f2d61,#171c47)}.hill.back{left:-10%;opacity:.55}.hill:not(.back){left:-18%}.astronaut{position:absolute;z-index:2;bottom:19px;left:42%;font-size:58px;filter:drop-shadow(4px 4px 0 #171832);animation:bob 2.2s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-7px)}}
+.crater{position:absolute;bottom:27px;width:48px;height:12px;border-radius:50%;background:#242342}.crater.c1{left:10%}.crater.c2{right:12%;width:30px}
+.feature-list{display:grid;gap:12px;margin-top:12px}.feature{display:flex;gap:12px;align-items:center;color:#d8d5ed;font-size:13px}.feature-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:10px;background:#1f2346;border:1px solid #4e4b7d;font-size:20px}
+.dashboard{display:none;margin-top:24px}.dashboard.show{display:block}.welcome{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.player-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:999px;background:rgba(17,19,34,.7);border:1px solid #4f4f87}.player-avatar{font-size:26px}.missions{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:18px;margin-top:18px}.mission{padding:18px 16px;border-radius:16px;background:linear-gradient(180deg,#1b1d3d,#15172f);border:2px solid #4d4b74;display:flex;flex-direction:column;gap:12px;min-height:220px;box-shadow:0 8px 0 rgba(7,10,31,.7)}.m-icon{font-size:30px;background:rgba(124,120,255,.18);width:54px;height:54px;border-radius:12px;display:grid;place-items:center;border:1px solid #6b62a8}.mission h3{font-family:'Press Start 2P';font-size:12px;line-height:1.6;color:var(--gold);margin:0}.mission p{margin:0;color:#d9d5ee;line-height:1.5;font-size:13px}.mission button{margin-top:auto;background:linear-gradient(180deg,#7c77ff,#5e5ad7);color:white;border:0;padding:12px 14px;border-radius:10px;font-family:'Press Start 2P';font-size:10px;line-height:1.5;cursor:pointer}.dashboard-note{font-size:11px;color:#a7a4c5;margin-top:12px}.mission-planner{margin-top:20px;padding:20px;border-radius:16px;background:linear-gradient(180deg,#19213d,#121830);border:2px solid #4d4b74;box-shadow:0 8px 0 rgba(7,10,31,.7)}.planner-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px;margin-top:18px}.plan-group h3{font-family:'Press Start 2P';font-size:11px;color:var(--cyan);margin:0 0 10px;line-height:1.6}.choice-list{display:grid;grid-template-columns:1fr;gap:10px}.choice-option{position:relative}.choice-option input{position:absolute;inset:0;opacity:0;cursor:pointer}.choice-card{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:10px;border:2px solid #4d4b74;background:#191c39;color:#f2f0ff;transition:.15s}.choice-option input:checked + .choice-card{border-color:var(--cyan);box-shadow:0 0 0 3px #78e7f222;background:#20264d}.choice-card small{display:block;color:#b9c1ff;font-size:10px;letter-spacing:1px;margin-top:2px}.choice-card strong{display:block;font-size:12px}.mission-summary{margin-top:18px;padding:16px;border-radius:12px;background:rgba(10,14,30,.7);border:1px solid #4d4b74}.mission-summary h3{font-family:'Press Start 2P';font-size:11px;color:var(--gold);margin:0 0 12px}.summary-grid{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:10px}.metric{padding:10px;border-radius:10px;background:#1a1d38;border:1px solid #4c4d76}.metric span{display:block;color:#8e93b8;font-size:10px;letter-spacing:1px;text-transform:uppercase}.metric strong{display:block;margin-top:6px;color:#fff;font-size:16px}.planner-actions{display:flex;justify-content:flex-end;margin-top:16px}.planner-actions button{max-width:260px}.footer{text-align:center;color:#8583a9;font-size:11px;margin:34px 0 0}.footer b{color:#c7c1ee}
+@media(max-width:760px){header{padding:18px 18px}.status{display:none}main{padding:0 18px}.layout{grid-template-columns:1fr}.hero{padding-top:20px}.hero p{font-size:14px}.missions{grid-template-columns:1fr}.planner-grid,.summary-grid{grid-template-columns:1fr}.mission-planner{padding:18px}}
+</style>
+</head>
+<body>
+<div id="stars"></div><div class="planet one"></div><div class="planet two"></div>
+<header><div class="brand"><div class="brand-icon">🚀</div><div class="brand-name">SPACE MISSION<br><span>BEYOND EARTH</span></div></div><div class="status">✦ ASTRONAUT TRAINING PROGRAM</div></header>
+<main>
+<section class="hero">
+<div class="eyebrow">YOUR JOURNEY STARTS HERE</div>
+<h1>READY FOR <span>LIFTOFF?</span></h1>
+<p>Train like an astronaut, explore the unknown, and prove you have what it takes to go beyond Earth. Your mission begins with one small step.</p>
+<div class="pixel-rule"></div>
 </section>
-
+<section class="layout" id="entry">
+<div class="panel">
+<h2 class="panel-title">CREATE YOUR ASTRONAUT</h2>
+<p class="panel-sub">Set up your explorer profile to enter the training programme.</p>
+<form id="profileForm">
+<label for="playerName">ASTRONAUT NAME</label>
+<input id="playerName" maxlength="18" placeholder="Enter your name..." autocomplete="nickname" required>
+<label>CHOOSE YOUR ASTRONAUT</label>
+<div class="gender">
+<label class="gender-option selected" data-gender="boy"><input type="radio" name="gender" value="boy" checked><span class="avatar">👨🏻‍🚀</span><strong>BOY ASTRONAUT</strong></label>
+<label class="gender-option" data-gender="girl"><input type="radio" name="gender" value="girl"><span class="avatar">👩🏻‍🚀</span><strong>GIRL ASTRONAUT</strong></label>
+</div>
+<button class="primary" type="submit">▶ START YOUR MISSION</button>
+<div class="message" id="formMessage" aria-live="polite"></div>
+</form>
+<p class="tiny">Your profile is saved in this browser for this demo. A production version can connect this form to your SQLite database for account registration and progress tracking.</p>
+</div>
+<div class="panel preview">
+<div class="preview-top"><h2 class="panel-title">THE UNIVERSE AWAITS</h2><p class="panel-sub">A little training. A giant leap for you.</p>
+<div class="scene"><div class="moon"></div><div class="hill back"></div><div class="hill"></div><div class="crater c1"></div><div class="crater c2"></div><div class="astronaut" id="previewAstronaut">👨🏻‍🚀</div></div>
+<div class="feature-list">
+<div class="feature"><span class="feature-icon">🪐</span><span><b>Explore space</b><br>Discover the wonders beyond Earth.</span></div>
+<div class="feature"><span class="feature-icon">🧑‍🚀</span><span><b>Complete astronaut training</b><br>Build your skills mission by mission.</span></div>
+<div class="feature"><span class="feature-icon">🏆</span><span><b>Earn your certification</b><br>Prove you're ready for the stars.</span></div>
+</div></div>
+</div>
+</section>
+<section class="dashboard" id="dashboard">
+<div class="panel">
+<div class="welcome"><div><h2 class="panel-title">WELCOME TO THE CREW, <span id="welcomeName"></span>!</h2><p class="panel-sub">Your astronaut training hub is ready. Choose a mission below.</p></div><div class="player-chip"><span class="player-avatar" id="playerAvatar">👨🏻‍🚀</span><span id="playerLabel">Astronaut</span></div></div>
+<div class="missions">
+<article class="mission"><div class="m-icon">🛰️</div><h3>MISSION 01</h3><p>Defy gravity and prove you can stay steady in zero-g environment conditions.</p><button onclick="openMission('minigames/defying-gravity/index.html','defying-gravity')">LAUNCH</button></article>
+<article class="mission"><div class="m-icon">🔧</div><h3>MISSION 02</h3><p>Repair a satellite, solve mission challenges, and recover vital systems.</p><button onclick="openMission('minigames/satellite-rescue/index.html','satellite-rescue')">LAUNCH</button></article>
+<article class="mission"><div class="m-icon">📡</div><h3>KNOWLEDGE CHECK</h3><p>Answer the space knowledge quiz and show what you've learned.</p><button onclick="openMission('quiz.html','quiz')">START QUIZ</button></article>
+</div>
+<div class="mission-planner">
+<h2 class="panel-title">MISSION PLANNER</h2>
+<p class="panel-sub">Choose the mission package before launch. Each option affects your launch resources and mission readiness.</p>
+<div class="planner-grid">
+<div class="plan-group">
+<h3>SPACECRAFT</h3>
+<div class="choice-list">
+<label class="choice-option"><input type="radio" name="shipOption" value="Scout" checked><span class="choice-card"><span><strong>Scout</strong><small>Fast + light</small></span><span>⚡</span></span></label>
+<label class="choice-option"><input type="radio" name="shipOption" value="Balanced"><span class="choice-card"><span><strong>Balanced</strong><small>Stable + flexible</small></span><span>🛠️</span></span></label>
+<label class="choice-option"><input type="radio" name="shipOption" value="Heavy"><span class="choice-card"><span><strong>Heavy</strong><small>Strong + costly</small></span><span>🛰️</span></span></label>
+</div>
+</div>
+<div class="plan-group">
+<h3>POWER</h3>
+<div class="choice-list">
+<label class="choice-option"><input type="radio" name="powerOption" value="Solar" checked><span class="choice-card"><span><strong>Solar</strong><small>Efficient</small></span><span>☀️</span></span></label>
+<label class="choice-option"><input type="radio" name="powerOption" value="Hybrid"><span class="choice-card"><span><strong>Hybrid</strong><small>Steady output</small></span><span>🔋</span></span></label>
+<label class="choice-option"><input type="radio" name="powerOption" value="Nuclear"><span class="choice-card"><span><strong>Nuclear</strong><small>High output</small></span><span>☢️</span></span></label>
+</div>
+</div>
+<div class="plan-group">
+<h3>PAYLOAD</h3>
+<div class="choice-list">
+<label class="choice-option"><input type="radio" name="payloadOption" value="Survey" checked><span class="choice-card"><span><strong>Survey</strong><small>Camera + sensors</small></span><span>📷</span></span></label>
+<label class="choice-option"><input type="radio" name="payloadOption" value="Repair"><span class="choice-card"><span><strong>Repair</strong><small>Tools + drones</small></span><span>🧰</span></span></label>
+<label class="choice-option"><input type="radio" name="payloadOption" value="Lab"><span class="choice-card"><span><strong>Lab</strong><small>Research kit</small></span><span>🧪</span></span></label>
+</div>
+</div>
+<div class="plan-group">
+<h3>ORBIT</h3>
+<div class="choice-list">
+<label class="choice-option"><input type="radio" name="orbitOption" value="LEO" checked><span class="choice-card"><span><strong>LEO</strong><small>Fast access</small></span><span>🌍</span></span></label>
+<label class="choice-option"><input type="radio" name="orbitOption" value="Lunar"><span class="choice-card"><span><strong>Lunar</strong><small>Deep-space route</small></span><span>🌙</span></span></label>
+<label class="choice-option"><input type="radio" name="orbitOption" value="Mars"><span class="choice-card"><span><strong>Mars</strong><small>Long-haul mission</small></span><span>🔴</span></span></label>
+</div>
+</div>
+</div>
+<div class="mission-summary">
+<h3>MISSION READINESS</h3>
+<div class="summary-grid">
+<div class="metric"><span>Budget</span><strong id="planBudget">100%</strong></div>
+<div class="metric"><span>Mass</span><strong id="planMass">74%</strong></div>
+<div class="metric"><span>Power</span><strong id="planPower">62%</strong></div>
+<div class="metric"><span>Data</span><strong id="planData">76%</strong></div>
+</div>
+</div>
+<div class="planner-actions"><button class="secondary" type="button" onclick="saveCurrentPlan()">SAVE PLAN</button></div>
+</div>
+<p class="dashboard-note">Mission choices are tracked locally in the browser so the player profile and training plan remain available between sessions.</p>
+<button class="secondary" style="margin-top:18px" onclick="logout()">↶ BACK TO PROFILE</button>
+</div>
+</section>
+<div class="footer">SPACE MISSION: BEYOND EARTH <b>✦</b> A PIXEL-INSPIRED SPACE ADVENTURE</div>
+</main>
 <script>
-const form = document.getElementById('profileForm');
-const genderOptions = document.querySelectorAll('.gender-option');
-let selectedGender = 'boy';
-
-genderOptions.forEach(option => {
-  option.addEventListener('click', () => {
-    selectedGender = option.dataset.gender;
-    genderOptions.forEach(item => item.classList.toggle('selected', item === option));
-    document.getElementById('previewAstronaut').textContent = selectedGender === 'boy' ? '👨🏻‍🚀' : '👩🏻‍🚀';
+const form=document.getElementById('profileForm');
+const genderOptions=document.querySelectorAll('.gender-option');
+let selectedGender='boy';
+genderOptions.forEach(option=>{
+  option.addEventListener('click',()=>{
+    selectedGender=option.dataset.gender;
+    genderOptions.forEach(item=>item.classList.toggle('selected',item===option));
+    document.getElementById('previewAstronaut').textContent=selectedGender==='boy'?'👨🏻‍🚀':'👩🏻‍🚀';
   });
 });
-
-form.addEventListener('submit', event => {
+form.addEventListener('submit',event=>{
   event.preventDefault();
-  const name = document.getElementById('playerName').value.trim();
-  if (!name) {
-    document.getElementById('formMessage').textContent = 'Please enter your astronaut name first.';
-    return;
-  }
-
-  const existingProfile = JSON.parse(localStorage.getItem('beyondEarthProfile') || '{}');
-
-  const profile = {
-    name,
-    gender: selectedGender,
-    credits: Number(existingProfile.credits || 300),
-    upgrades: existingProfile.upgrades || {},
-    missionHistory: Array.isArray(existingProfile.missionHistory) ? existingProfile.missionHistory : [],
-    missionRecords: existingProfile.missionRecords && typeof existingProfile.missionRecords === 'object' ? existingProfile.missionRecords : {}
-  };
-
-  localStorage.setItem('beyondEarthProfile', JSON.stringify(profile));
+  const name=document.getElementById('playerName').value.trim();
+  if(!name){document.getElementById('formMessage').textContent='Please enter your astronaut name first.';return;}
+  const profile={name,gender:selectedGender};
+  localStorage.setItem('beyondEarthProfile',JSON.stringify(profile));
   showDashboard(profile);
 });
-
-function showDashboard(profile) {
-  const safeProfile = profile || JSON.parse(localStorage.getItem('beyondEarthProfile') || '{}');
-  document.getElementById('entry').style.display = 'none';
+function showDashboard(profile){
+  document.getElementById('entry').style.display='none';
   document.getElementById('dashboard').classList.add('show');
-
-  document.getElementById('welcomeName').textContent = (safeProfile.name || 'EXPLORER').toUpperCase();
-  document.getElementById('playerLabel').textContent = safeProfile.name || 'Explorer';
-  document.getElementById('playerAvatar').textContent = safeProfile.gender === 'girl' ? '👩🏻‍🚀' : '👨🏻‍🚀';
-
-  initPlannerDefaults();
-  renderUpgradeShop();
-  renderMissionHistory();
-  updatePlannerSummary();
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('welcomeName').textContent=profile.name.toUpperCase();
+  document.getElementById('playerLabel').textContent=profile.name;
+  document.getElementById('playerAvatar').textContent=profile.gender==='boy'?'👨🏻‍🚀':'👩🏻‍🚀';
+  window.scrollTo({top:0,behavior:'smooth'});
+  updateMissionPlan();
 }
-
-function logout() {
+function logout(){
   document.getElementById('dashboard').classList.remove('show');
-  document.getElementById('entry').style.display = 'grid';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('entry').style.display='grid';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
-
-function initPlannerDefaults() {
-  if (!window.SpaceMissionSystem) return;
-
-  const recommended = {
-    objective: 'Satellite Repair',
-    ship: 'Standard Research Craft',
-    payload: 'Repair Toolkit',
-    power: 'Hybrid Power System',
-    orbit: 'Medium Earth Orbit (MEO)'
+function getMissionPlan(){
+  const defaults={ship:'Scout',power:'Solar',payload:'Survey',orbit:'LEO'};
+  try{
+    const saved=JSON.parse(localStorage.getItem('beyondEarthMissionPlan')||'null');
+    if(saved&&saved.ship&&saved.power&&saved.payload&&saved.orbit){
+      return {...defaults,...saved};
+    }
+  }catch(e){}
+  return defaults;
+}
+function applyMissionPlan(plan){
+  document.querySelectorAll('input[name="shipOption"]').forEach(input=>{input.checked=input.value===plan.ship;});
+  document.querySelectorAll('input[name="powerOption"]').forEach(input=>{input.checked=input.value===plan.power;});
+  document.querySelectorAll('input[name="payloadOption"]').forEach(input=>{input.checked=input.value===plan.payload;});
+  document.querySelectorAll('input[name="orbitOption"]').forEach(input=>{input.checked=input.value===plan.orbit;});
+}
+function updateMissionPlan(){
+  const plan=getMissionPlan();
+  applyMissionPlan(plan);
+  const shipConfig={Scout:{budget:94,mass:72,power:62,data:68},Balanced:{budget:100,mass:81,power:78,data:74},Heavy:{budget:120,mass:92,power:88,data:86}};
+  const powerConfig={Solar:{budget:96,mass:76,power:60,data:72},Hybrid:{budget:106,mass:83,power:80,data:82},Nuclear:{budget:118,mass:88,power:94,data:90}};
+  const payloadConfig={Survey:{budget:103,mass:74,power:70,data:86},Repair:{budget:108,mass:86,power:84,data:72},Lab:{budget:112,mass:90,power:92,data:91}};
+  const orbitConfig={LEO:{budget:95,mass:68,power:62,data:74},Lunar:{budget:110,mass:82,power:76,data:79},Mars:{budget:120,mass:94,power:92,data:88}};
+  const s=shipConfig[plan.ship];
+  const p=powerConfig[plan.power];
+  const d=payloadConfig[plan.payload];
+  const o=orbitConfig[plan.orbit];
+  const budgetMath=Math.round((s.budget+p.budget+d.budget+o.budget)/4);
+  const massMath=Math.round((s.mass+p.mass+d.mass+o.mass)/4);
+  const powerMath=Math.round((s.power+p.power+d.power+o.power)/4);
+  const dataMath=Math.round((s.data+p.data+d.data+o.data)/4);
+  document.getElementById('planBudget').textContent=budgetMath+'%';
+  document.getElementById('planMass').textContent=massMath+'%';
+  document.getElementById('planPower').textContent=powerMath+'%';
+  document.getElementById('planData').textContent=dataMath+'%';
+}
+function saveCurrentPlan(){
+  const plan={
+    ship:document.querySelector('input[name="shipOption"]:checked').value,
+    power:document.querySelector('input[name="powerOption"]:checked').value,
+    payload:document.querySelector('input[name="payloadOption"]:checked').value,
+    orbit:document.querySelector('input[name="orbitOption"]:checked').value
   };
-
-  const plan = window.SpaceMissionSystem.loadPlan ? window.SpaceMissionSystem.loadPlan() : recommended;
-
-  const normalized = {
-    objective: recommended.objective,
-    ship: recommended.ship,
-    payload: recommended.payload,
-    power: recommended.power,
-    orbit: recommended.orbit
+  localStorage.setItem('beyondEarthMissionPlan',JSON.stringify(plan));
+  updateMissionPlan();
+}
+function openMission(file, missionKey=''){
+  const plan={
+    ship:document.querySelector('input[name="shipOption"]:checked').value,
+    power:document.querySelector('input[name="powerOption"]:checked').value,
+    payload:document.querySelector('input[name="payloadOption"]:checked').value,
+    orbit:document.querySelector('input[name="orbitOption"]:checked').value,
+    mission:missionKey || 'custom'
   };
-
-  if (window.SpaceMissionSystem.savePlan) {
-    window.SpaceMissionSystem.savePlan(normalized);
-  }
-
-  document.getElementById('plannerObjective').value = normalized.objective;
-  document.getElementById('plannerShip').value = normalized.ship;
-  document.getElementById('plannerPayload').value = normalized.payload;
-  document.getElementById('plannerPower').value = normalized.power;
-  document.getElementById('plannerOrbit').value = normalized.orbit;
+  localStorage.setItem('beyondEarthMissionPlan',JSON.stringify(plan));
+  if(missionKey){localStorage.setItem('beyondEarthLastMission', missionKey);}
+  window.location.href=file;
 }
+const saved=localStorage.getItem('beyondEarthProfile');
+if(saved){try{showDashboard(JSON.parse(saved));}catch(e){localStorage.removeItem('beyondEarthProfile');}}
 
-function getCurrentPlanFromForm() {
-  return {
-    objective: document.getElementById('plannerObjective').value,
-    ship: document.getElementById('plannerShip').value,
-    payload: document.getElementById('plannerPayload').value,
-    power: document.getElementById('plannerPower').value,
-    orbit: document.getElementById('plannerOrbit').value
-  };
-}
-
-function updatePlannerSummary() {
-  if (!window.SpaceMissionSystem) return;
-  const plan = getCurrentPlanFromForm();
-
-  const result = window.SpaceMissionSystem.evaluateMissionPlan
-    ? window.SpaceMissionSystem.evaluateMissionPlan(plan)
-    : { ok: true, errors: [] };
-
-  const summary = document.getElementById('missionSummary');
-  const warnings = document.getElementById('missionWarnings');
-
-  if (!summary) return;
-
-  const resources = result.resources || {
-    massValue: 0,
-    massCapacity: 0,
-    powerUse: 0,
-    powerCapacity: 0,
-    commsUse: 0,
-    commsCapacity: 0,
-    totalCost: 0,
-    scienceValue: 0
-  };
-
-  summary.innerHTML = `
-    <strong>Mission Objective:</strong> ${plan.objective}<br>
-    <strong>Spacecraft:</strong> ${plan.ship}<br>
-    <strong>Payload:</strong> ${plan.payload}<br>
-    <strong>Power:</strong> ${plan.power}<br>
-    <strong>Orbit:</strong> ${plan.orbit}<br>
-    <strong>Mass:</strong> ${resources.massValue || 0} / ${resources.massCapacity || 0}<br>
-    <strong>Power:</strong> ${resources.powerUse || 0} / ${resources.powerCapacity || 0}<br>
-    <strong>Communications:</strong> ${resources.commsUse || 0} / ${resources.commsCapacity || 0}<br>
-    <strong>Mission Cost:</strong> ${resources.totalCost || 0} / 1000 credits<br>
-    <strong>Science Value:</strong> ${resources.scienceValue || 0}<br>
-    <strong>Status:</strong> ${result.ok ? '<span style="color:#7fffb4;">READY</span>' : '<span style="color:#ffb4c9;">INVALID</span>'}
-  `;
-
-  warnings.innerHTML = result.ok ? '' : result.errors.join('<br>');
-}
-
-function saveCurrentMissionPlan() {
-  if (!window.SpaceMissionSystem) return;
-
-  const plan = getCurrentPlanFromForm();
-  const result = window.SpaceMissionSystem.evaluateMissionPlan(plan);
-
-  if (!result.ok) {
-    document.getElementById('missionWarnings').innerHTML = result.errors.join('<br>');
-    return;
-  }
-
-  window.SpaceMissionSystem.savePlan(plan);
-  updatePlannerSummary();
-  alert('Mission plan saved.');
-}
-
-function launchCurrentMission() {
-  if (!window.SpaceMissionSystem) return;
-
-  const plan = getCurrentPlanFromForm();
-  const result = window.SpaceMissionSystem.evaluateMissionPlan(plan);
-
-  if (!result.ok) {
-    document.getElementById('missionWarnings').innerHTML = result.errors.join('<br>');
-    return;
-  }
-
-  if (plan.objective === 'Satellite Repair') {
-    window.location.href = 'minigames/satellite-rescue/index.html';
-  } else {
-    window.location.href = 'minigames/defying-gravity/index.html';
-  }
-}
-
-function openMission(file, missionKey = '') {
-  const plan = {
-    objective: 'Satellite Repair',
-    ship: 'Standard Research Craft',
-    payload: 'Repair Toolkit',
-    power: 'Hybrid Power System',
-    orbit: 'Medium Earth Orbit (MEO)'
-  };
-
-  if (window.SpaceMissionSystem && window.SpaceMissionSystem.savePlan) {
-    window.SpaceMissionSystem.savePlan(plan);
-  }
-
-  if (missionKey === 'quiz') {
-    window.location.href = file;
-    return;
-  }
-
-  if (missionKey === 'defying-gravity') {
-    window.location.href = file;
-    return;
-  }
-
-  if (missionKey === 'satellite-rescue') {
-    window.location.href = file;
-    return;
-  }
-
-  window.location.href = file;
-}
-
-function renderUpgradeShop() {
-  const shop = document.getElementById('upgradeShop');
-  if (!shop || !window.SpaceMissionSystem) return;
-
-  const profile = window.SpaceMissionSystem.loadProfile();
-  shop.innerHTML = '';
-
-  Object.entries(window.SpaceMissionSystem.UPGRADE_CATALOG || {}).forEach(([key, item]) => {
-    const level = Number(profile.upgrades[key] || 0);
-    const cost = item.costs[level] || item.costs[item.costs.length - 1];
-
-    const card = document.createElement('div');
-    card.style.cssText = 'padding:12px;border:1px solid #4f4d78;background:#10162d;color:#fff;border-radius:12px;';
-    card.innerHTML = `
-      <div style="font-weight:800;color:#ffe49a;">${item.name}</div>
-      <div style="font-size:12px;color:#c9c6df;margin-top:6px;">${item.description}</div>
-      <div style="font-size:12px;margin-top:8px;">Cost: ${cost} credits</div>
-      <div style="font-size:12px;margin-top:4px;">Level: ${level}/${item.maxLevel}</div>
-      <div style="font-size:12px;margin-top:4px;">Affordable: ${profile.credits >= cost ? 'Yes' : 'No'}</div>
-      <button style="margin-top:12px;width:100%;padding:10px;border:0;background:${profile.credits >= cost ? '#8ef2bf' : '#8d8ea5'};color:#0d1022;font-weight:800;cursor:pointer;border-radius:10px;" onclick="buyUpgrade('${key}')">
-        ${level >= item.maxLevel ? 'MAXED OUT' : 'BUY'}
-      </button>
-    `;
-    shop.appendChild(card);
-  });
-}
-
-function buyUpgrade(key) {
-  if (!window.SpaceMissionSystem) return;
-  const result = window.SpaceMissionSystem.buyUpgrade(key);
-
-  if (!result.ok) {
-    alert(result.message);
-    return;
-  }
-
-  renderUpgradeShop();
-  updatePlannerSummary();
-}
-
-function renderMissionHistory() {
-  const history = (window.SpaceMissionSystem && window.SpaceMissionSystem.loadProfile)
-    ? window.SpaceMissionSystem.loadProfile().missionHistory || []
-    : [];
-
-  const list = document.getElementById('missionHistoryList');
-  if (!list) return;
-
-  list.innerHTML = '';
-
-  if (!history.length) {
-    list.innerHTML = '<div style="color:#b8b2d8;font-size:12px;">No mission reports yet.</div>';
-    return;
-  }
-
-  history.forEach(report => {
-    const item = document.createElement('div');
-    item.style.cssText = 'padding:12px;border:1px solid #4f4d78;background:#10162d;color:#fff;border-radius:12px;';
-    item.innerHTML = `
-      <div style="font-weight:800;color:#ffd23f;">${report.objective || 'Mission'}</div>
-      <div style="font-size:12px;color:#c9c6df;">${report.outcome || 'Mission complete'} • ${report.score || 0} pts</div>
-      <div style="font-size:12px;color:#c9c6df;">${report.creditsEarned || 0} credits earned</div>
-    `;
-    list.appendChild(item);
-  });
-}
-
-const saved = localStorage.getItem('beyondEarthProfile');
-if (saved) {
-  try {
-    showDashboard(JSON.parse(saved));
-  } catch (e) {
-    localStorage.removeItem('beyondEarthProfile');
-  }
-}
+document.querySelectorAll('input[name="shipOption"]').forEach(input=>input.addEventListener('change', saveCurrentPlan));
+document.querySelectorAll('input[name="powerOption"]').forEach(input=>input.addEventListener('change', saveCurrentPlan));
+document.querySelectorAll('input[name="payloadOption"]').forEach(input=>input.addEventListener('change', saveCurrentPlan));
+document.querySelectorAll('input[name="orbitOption"]').forEach(input=>input.addEventListener('change', saveCurrentPlan));
 </script>
+</body>
+</html>
