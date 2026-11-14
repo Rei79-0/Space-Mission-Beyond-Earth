@@ -53,8 +53,24 @@ class Game {
       this.astronaut.flap();
       this.steam.burst(this.astronaut);
     } else if (this.state === GameState.DEAD && performance.now() - this.deadAt > CONFIG.RETRY_DELAY_MS) {
-      this.reset();
+      if (this.isCampaign()) this.goToSatelliteRescue();
+      else this.reset();
     }
+  }
+
+  isCampaign() {
+    try { return !!JSON.parse(localStorage.getItem('beyondEarthCampaign') || 'null'); }
+    catch (_) { return false; }
+  }
+
+  goToSatelliteRescue() {
+    try {
+      const campaign = JSON.parse(localStorage.getItem('beyondEarthCampaign') || '{}');
+      campaign.stage = 2;
+      campaign.flightScore = this.score;
+      localStorage.setItem('beyondEarthCampaign', JSON.stringify(campaign));
+    } catch (_) {}
+    window.location.assign('../satellite-rescue/index.html');
   }
 
   togglePause() {
@@ -67,6 +83,10 @@ class Game {
   }
 
   handlePointer(x, y) {
+    if (this.state === GameState.DEAD && this.isCampaign()) {
+      if (x > CONFIG.WIDTH / 2 - 210 && x < CONFIG.WIDTH / 2 + 210 && y > 330 && y < 455) this.goToSatelliteRescue();
+      return;
+    }
     if (this.paused) {
       const action = UI.pauseActionAt(x, y);
       if (action === 'continue') this.paused = false;
