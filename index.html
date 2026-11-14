@@ -240,11 +240,43 @@ function renderMissionHistory(){
 
 function openMission(file){window.location.href=file;}
 
+
+// Always show the Profile Page before entering the Dashboard.
+// If a profile already exists, load its information into the form.
+
 const saved = localStorage.getItem('beyondEarthProfile');
-if(saved){
-  try{showDashboard(JSON.parse(saved));}
-  catch(e){localStorage.removeItem('beyondEarthProfile');}
+
+if (saved) {
+  try {
+    const profile = JSON.parse(saved);
+
+    // Restore the player's name
+    document.getElementById('playerName').value =
+      profile.name || '';
+
+    // Restore the selected astronaut
+    selectedGender = profile.gender === 'girl' ? 'girl' : 'boy';
+
+    genderOptions.forEach(option => {
+      const isSelected = option.dataset.gender === selectedGender;
+
+      option.classList.toggle('selected', isSelected);
+      option.querySelector('input').checked = isSelected;
+    });
+
+    // Update astronaut preview
+    document.getElementById('previewAstronaut').textContent =
+      selectedGender === 'girl' ? '👩🏻‍🚀' : '👨🏻‍🚀';
+
+    // Change button for returning players
+    form.querySelector('button[type="submit"]').textContent =
+      'CONTINUE TO DASHBOARD';
+
+  } catch (error) {
+    localStorage.removeItem('beyondEarthProfile');
+  }
 }
+
 </script>
 </body>
 </html>
