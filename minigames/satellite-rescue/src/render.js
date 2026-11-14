@@ -31,7 +31,7 @@ function world(){const cx=Math.round(clamp(P.x-W/2,0,WW-W)),cy=Math.round(clamp(
  tx('LEVEL '+(lv+1)+'/'+LV.length,8,8,'#8fa0d8');for(let i=0;i<LV.length;i++){X.fillStyle=i<lv?'#2ecc71':i==lv?'#ffd23f':'#3a3a70';X.fillRect(100+i*12,9,9,6)}tx(L.name,8,20,'#f0f0ff');
  tx(L.mars?(phase=='keys'?'KEYS '+kf+'/3':phase=='bunker'?'OPEN THE BUNKER':'REPORT TO BASE'):phase=='collect'?'PARTS '+got+'/'+L.n:phase=='repair'?'REPAIR SATELLITE':phase=='push'?(mounted?'TOWING SATELLITE':'MOUNT & TOW SAT'):'REPORT TO BASE',8,32,'#ffd23f');
  if(L.mars){if(hint){X.fillStyle='rgba(21,19,43,.88)';X.fillRect(4,46,hint.length*8+8,14);tx(hint,8,49,'#7fe8ff')}X.fillStyle='rgba(21,19,43,.88)';X.fillRect(W-130,22,126,14);tx('CODE '+CP.map((p,i)=>i<kf?p:'__').join('-'),W-8,25,'#7fe8ff','right')}
- tx(fmt(t+pen),W-8,8,'#f0f0ff','right');
+ tx(fmt(t+pen),W-8,8,'#f0f0ff','right');if(shieldCharges>0)tx('SHIELD '+shieldCharges,W-8,36,'#7fe8ff','right');
  X.fillStyle='rgba(21,19,43,.88)';X.fillRect(4,H-18,92,14);X.fillStyle=fcd<=0?'#7fe8ff':'#3a3a70';X.fillRect(6,H-16,Math.round(40*(1-clamp(fcd/.35,0,1))),10);tx('STUN',50,H-15,'#8fa0d8');
  let pr='';if(phase=='collect'&&items.some(o=>!o.got&&dist(o,P)<28))pr='PRESS E - PICK UP';else if(phase=='repair'&&dist(SAT,P)<55)pr='PRESS E - REPAIR SATELLITE';else if(phase=='return'&&dist(BASE,P)<55)pr='PRESS E - REPORT TO BASE';
  if(phase=='push'&&!SAT.docked&&!mounted&&dist(SAT,P)<75)pr='HOLD RIGHT CLICK - MOUNT';if(L.mars){if(CH.some(c=>c.open&&!c.took&&dist(c,P)<30))pr='PRESS E - TAKE KEY';else if(phase=='bunker'&&dist(BUNK,P)<50)pr='PRESS E - OPEN BUNKER';else if(phase!='return'&&EG.some(e=>dist(e,P)<40))pr='PRESS E - INSPECT'}
