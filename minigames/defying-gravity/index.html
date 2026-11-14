@@ -1,31 +1,32 @@
-1| <!DOCTYPE html>
-2| <html lang="en">
-3| <head>
-4|   <meta charset="utf-8">
-5|   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-6|   <title>Astro Flap</title>
-7|   <link rel="stylesheet" href="css/style.css">
-8| </head>
-9| <body>
-10|   <canvas id="game" width="960" height="540"></canvas>
-11| 
-12|   <!-- Load order matters: config -> sprites -> entities -> systems -> game -> main -->
-13|   <script src="js/config.js"></script>
-14| 
-15|   <script src="js/sprites/SpriteFactory.js"></script>
-16|   <script src="js/sprites/AstronautSprite.js"></script>
-17|   <script src="js/sprites/AsteroidSprite.js"></script>
-18|   <script src="js/sprites/BackgroundSprite.js"></script>
-19| 
-20|   <script src="js/entities/Astronaut.js"></script>
-21|   <script src="js/entities/AsteroidColumn.js"></script>
-22|   <script src="js/entities/SteamParticle.js"></script>
-23| 
-24|   <script src="js/systems/InputHandler.js"></script>
-25|   <script src="js/systems/UI.js"></script>
-26| 
-27|   <script src="js/Game.js"></script>
-28|   <script src="js/main.js"></script>
-29| </body>
-30| </html>
-31| 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Astro Flap</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game" width="960" height="540"></canvas>
+
+  <!-- Load order matters: config -> sprites -> entities -> systems -> game -> main -->
+  <script src="../../mission-history.js"></script>
+  <script src="js/config.js"></script>
+
+  <script src="js/sprites/SpriteFactory.js"></script>
+  <script src="js/sprites/AstronautSprite.js"></script>
+  <script src="js/sprites/AsteroidSprite.js"></script>
+  <script src="js/sprites/BackgroundSprite.js"></script>
+
+  <script src="js/entities/Astronaut.js"></script>
+  <script src="js/entities/AsteroidColumn.js"></script>
+  <script src="js/entities/SteamParticle.js"></script>
+
+  <script src="js/systems/InputHandler.js"></script>
+  <script src="js/systems/UI.js"></script>
+
+  <script src="js/Game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
+
