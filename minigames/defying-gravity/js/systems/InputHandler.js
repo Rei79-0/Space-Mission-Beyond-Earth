@@ -1,6 +1,6 @@
 /**
  * Listens to keyboard, mouse and touch and calls back into the game.
- * Callbacks: onJump(), onTogglePause(), onPointer(x, y), onHidden()
+ * Callbacks: onJump(), onTogglePause(), onExitRequest(), onPointer(x, y), onHidden()
  */
 class InputHandler {
   static JUMP_KEYS = ['Space', 'Enter', 'NumpadEnter', 'ArrowUp'];
@@ -22,7 +22,10 @@ class InputHandler {
   }
 
   onKeyDown(e) {
-    if (InputHandler.PAUSE_KEYS.includes(e.code)) {
+    if (e.code === 'Escape') {
+      e.preventDefault();
+      if (!e.repeat) this.cb.onExitRequest();
+    } else if (e.code === 'KeyP') {
       e.preventDefault();
       if (!e.repeat) this.cb.onTogglePause();
     } else if (InputHandler.JUMP_KEYS.includes(e.code)) {
