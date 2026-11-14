@@ -9,7 +9,7 @@
     shield:{name:'Protective Shield',description:'Absorbs the first three collision hits in Minigame 2.',maxLevel:1,costs:[180]}
   };
   const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch(_){return fallback}};
-  function loadProfile(){const p=read(PROFILE_KEY,{});return {...p,credits:Number(p.credits??300),upgrades:p.upgrades||{},missionHistory:Array.isArray(p.missionHistory)?p.missionHistory:[]};}
+  function loadProfile(){const p=read(PROFILE_KEY,{});return {...p,credits:Number(p.credits??300),upgrades:p.upgrades||{},missionHistory:Array.isArray(p.missionHistory)?p.missionHistory:[],missionRecords:p.missionRecords&&typeof p.missionRecords==='object'?p.missionRecords:{}};}
   function saveProfile(p){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(p));return true}catch(_){return false}}
   function loadPlan(){return {...DEFAULT_PLAN,...read(PLAN_KEY,{})};}
   function savePlan(plan){try{localStorage.setItem(PLAN_KEY,JSON.stringify({...DEFAULT_PLAN,...plan}));return {ok:true}}catch(_){return {ok:false}}}
