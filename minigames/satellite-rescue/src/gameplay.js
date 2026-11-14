@@ -11,18 +11,28 @@ function answer(i){const o=opts[i];if(!o||o.dis)return;att++;
  if(o.ok){cur.got=true;msg='GOT '+ITN[cur.type]+'!';msgT=2.5;scene='play';if(items.every(v=>v.got)){phase='repair';msg='ALL PARTS FOUND! GO TO THE SATELLITE';msgT=4}}
  else{o.dis=true;qmsg='WRONG ANSWER - TRY AGAIN'}}
 function finish(){const L=LV[lv],T=t+pen,tf=T<=L.par?1:Math.max(0,1-(T-L.par)/(L.par*1.5)),acc=L.n/att,pts=Math.round(60*tf+40*acc);
- res[lv]={T,att,hits,pts,tier:pts>=90?3:pts>=70?2:pts>=45?1:0};scene='result'}
+ res[lv]={T,elapsedSeconds:t,att,hits,pts,tier:pts>=90?3:pts>=70?2:pts>=45?1:0};scene='result'}
 function next(){
  const campaign=campaignData();
  if(campaign&&campaign.stage===2){
    try{
-     const result={objective:campaign.objective,flightScore:campaign.flightScore||0,rescueScore:res[lv]?.pts||0,completedAt:Date.now()};
+     const stageResult=res[lv]||{pts:0,T:t+pen,att,hits,tier:0};
+     const result={objective:campaign.objective,flightScore:campaign.flightScore||0,rescueScore:stageResult.pts,completedAt:Date.now()};
      localStorage.setItem('beyondEarthCampaignResult',JSON.stringify(result));
+     if(window.BeyondEarthHistory){
+       window.BeyondEarthHistory.record({
+         key:'satelliteRescue',
+         game:'Minigame 2 — Satellite Rescue',
+         status:'completed',
+         outcome:'Stage completed',
+         score:stageResult.pts,
+         highScore:stageResult.pts,
+         elapsedSeconds:stageResult.elapsedSeconds ?? stageResult.T,
+         details:{adjustedTimeSeconds:stageResult.T,attempts:stageResult.att,hits:stageResult.hits,tier:stageResult.tier}
+       });
+     }
      const profile=JSON.parse(localStorage.getItem('beyondEarthProfile')||'{}');
      profile.credits=Number(profile.credits??300)+100;
-     profile.missionHistory=Array.isArray(profile.missionHistory)?profile.missionHistory:[];
-     profile.missionHistory.unshift({objective:campaign.objective,outcome:'Two-stage mission completed',score:result.flightScore+result.rescueScore,creditsEarned:100});
-     profile.missionHistory=profile.missionHistory.slice(0,20);
      localStorage.setItem('beyondEarthProfile',JSON.stringify(profile));
      localStorage.removeItem('beyondEarthCampaign');
    }catch(_){}
