@@ -10,7 +10,7 @@ function pauseClick(m){
   if(i===0)scene=prev;
   else if(i===1)startLevel(lv);
   else if(i===2)scene='menu';
-  else if(window.confirm('Return to the Space Mission dashboard?'))window.location.assign('../../index.html');
+  else window.location.assign('../../index.html');
   return;
  }
 }
