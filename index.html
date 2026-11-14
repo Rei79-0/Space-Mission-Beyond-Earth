@@ -74,11 +74,32 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 <section class="dashboard" id="dashboard">
 <div class="panel">
 <div class="welcome"><div><h2 class="panel-title">WELCOME TO THE CREW, <span id="welcomeName"></span>!</h2><p class="panel-sub">Your astronaut training hub is ready. Choose a mission below.</p></div><div class="player-chip"><div class="player-avatar" id="playerAvatar">👨🏻‍🚀</div><div><div class="player-status">CURRENT CREW MEMBER</div><div id="playerLabel" style="font-weight:900; font-size:15px;">Explorer</div></div></div></div>
-<article class="mission"><div class="m-icon">🚀</div><h3>MISSION 01</h3><p>Enter your first training challenge and test your astronaut skills.</p><button onclick="openMission('minigames/defying-gravity/index.html')">PLAY NOW</button></article>
-<article class="mission"><div class="m-icon">🔧</div><h3>MISSION 02</h3><p>Take on another hands-on challenge in your journey through space.</p><button onclick="openMission('minigames/satellite-rescue/index.html')">PLAY NOW</button></article>
-<article class="mission"><div class="m-icon">📡</div><h3>KNOWLEDGE CHECK</h3><p>Answer the space knowledge quiz and show what you've learned.</p><button onclick="openMission('quiz.html')">START QUIZ</button></article>
-</div>
 
+<div class="missions">
+
+  <article class="mission">
+    <div class="m-icon">🚀</div>
+    <h3>MISSION 01</h3>
+    <p>Enter your first training challenge and test your astronaut skills.</p>
+    <button onclick="openMission('minigames/defying-gravity/index.html')">PLAY NOW</button>
+  </article>
+
+  <article class="mission">
+    <div class="m-icon">🔧</div>
+    <h3>MISSION 02</h3>
+    <p>Take on another hands-on challenge in your journey through space.</p>
+    <button onclick="openMission('minigames/satellite-rescue/index.html')">PLAY NOW</button>
+  </article>
+
+  <article class="mission">
+    <div class="m-icon">📡</div>
+    <h3>KNOWLEDGE CHECK</h3>
+    <p>Answer the space knowledge quiz and show what you've learned.</p>
+    <button onclick="openMission('quiz.html')">START QUIZ</button>
+  </article>
+
+</div>
+</div>
 <div class="mission-planner-panel" style="margin-top:22px;border:1px solid var(--line);background:#121a36bb;border-radius:14px;padding:16px;">
   <div class="panel-title" style="margin-bottom:8px;">MISSION OBJECTIVE</div>
   <p style="color:#c9c6df;font-size:13px;margin:0 0 12px;">Choose what your crew is working toward. Every mission has two stages: astronaut flight, then satellite rescue.</p>
