@@ -30,56 +30,13 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 .feature-list{display:grid;gap:12px;margin-top:12px}.feature{display:flex;gap:12px;align-items:center;color:#d8d5ed;font-size:13px}.feature-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:10px;background:#261d4e;border:2px solid #604d9e}
 .dashboard{display:none;margin-top:24px}.dashboard.show{display:block}.welcome{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.player-chip{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#161b39;border:1px solid var(--line);border-radius:12px}.player-avatar{display:grid;place-items:center;min-width:44px;height:44px;background:#2c2d56;border:2px solid #6a64a8;border-radius:12px;font-size:24px}.player-status{font-size:11px;color:#cfc8ef;text-transform:uppercase;letter-spacing:1.4px}
 .dashboard-note{font-size:11px;color:#a7a4c5;margin-top:12px}.footer{text-align:center;color:#8583a9;font-size:11px;margin:34px 0 0}.footer b{color:#c7c1ee}
-
-.mission {
-    background: linear-gradient(180deg, #1a1d3d, #11152e);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-width: 0;
-}
-
-.missions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 18px;
-    align-items: stretch;
-}
-
-.m-icon { font-size: 30px; }
-
-.mission h3 {
-    margin: 0;
-    font-family: 'Press Start 2P';
-    font-size: 11px;
-    line-height: 1.7;
-    color: var(--gold);
-}
-
-.mission p {
-    margin: 0;
-    color: #d4d0f0;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.mission button {
-    margin-top: auto;
-    padding: 12px 14px;
-    border: 0;
-    border-radius: 10px;
-    background: #7bcaef;
-    color: #091826;
-    font-weight: 900;
-    cursor: pointer;
-    font-family: 'Press Start 2P';
-    font-size: 10px;
-}
-
+#upgradeShop.upgrade-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+.upgrade-card{min-width:0;min-height:190px;padding:12px;border:1px solid #4f4d78;background:#10162d;color:#fff;border-radius:12px;display:flex;flex-direction:column;height:100%}
+.upgrade-card .upgrade-description{margin-top:6px}
+.upgrade-card .upgrade-cost{margin-top:8px}
+.upgrade-card .upgrade-buy{margin-top:auto;width:100%;min-height:38px;padding:10px;border:0;color:#0d1022;font-weight:800;cursor:pointer;border-radius:10px}
+@media(max-width:760px){#upgradeShop.upgrade-grid{grid-template-columns:1fr}}
+.mission{background:linear-gradient(180deg,#1a1d3d,#11152e);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}.missions{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}.m-icon{font-size:30px}.mission h3{margin:0;font-family:'Press Start 2P';font-size:11px;line-height:1.7;color:var(--gold)}.mission p{margin:0;color:#d4d0f0;font-size:14px;line-height:1.5}.mission button{margin-top:auto;padding:12px 14px;border:0;border-radius:10px;background:#7bcaef;color:#091826;font-weight:900;cursor:pointer;font-family:'Press Start 2P';font-size:10px}
 @media(max-width:760px){header{padding:18px 18px}.status{display:none}main{padding:0 18px}.layout{grid-template-columns:1fr}.hero{padding-top:20px}.hero p{font-size:14px}.missions{grid-template-columns:1fr}.panel{padding:18px 16px}} 
 </style>
 </head>
@@ -123,32 +80,11 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 <section class="dashboard" id="dashboard">
 <div class="panel">
 <div class="welcome"><div><h2 class="panel-title">WELCOME TO THE CREW, <span id="welcomeName"></span>!</h2><p class="panel-sub">Your astronaut training hub is ready. Choose a mission below.</p></div><div class="player-chip"><div class="player-avatar" id="playerAvatar">👨🏻‍🚀</div><div><div class="player-status">CURRENT CREW MEMBER</div><div id="playerLabel" style="font-weight:900; font-size:15px;">Explorer</div></div></div></div>
-
-<div class="missions">
-
-  <article class="mission">
-    <div class="m-icon">🚀</div>
-    <h3>MISSION 01</h3>
-    <p>Enter your first training challenge and test your astronaut skills.</p>
-    <button onclick="openMission('minigames/defying-gravity/index.html')">PLAY NOW</button>
-  </article>
-
-  <article class="mission">
-    <div class="m-icon">🔧</div>
-    <h3>MISSION 02</h3>
-    <p>Take on another hands-on challenge in your journey through space.</p>
-    <button onclick="openMission('minigames/satellite-rescue/index.html')">PLAY NOW</button>
-  </article>
-
-  <article class="mission">
-    <div class="m-icon">📡</div>
-    <h3>KNOWLEDGE CHECK</h3>
-    <p>Answer the space knowledge quiz and show what you've learned.</p>
-    <button onclick="openMission('quiz.html')">START QUIZ</button>
-  </article>
-
+<article class="mission"><div class="m-icon">🚀</div><h3>MISSION 01</h3><p>Enter your first training challenge and test your astronaut skills.</p><button onclick="launchCurrentMission()">PLAY NOW</button></article>
+<article class="mission"><div class="m-icon">🔧</div><h3>MISSION 02</h3><p>Take on another hands-on challenge in your journey through space.</p><button onclick="launchSatelliteRescue()">PLAY NOW</button></article>
+<article class="mission"><div class="m-icon">📡</div><h3>KNOWLEDGE CHECK</h3><p>Answer the space knowledge quiz and show what you've learned.</p><button onclick="openMission('quiz.html')">START QUIZ</button></article>
 </div>
-</div>
+
 <div class="mission-planner-panel" style="margin-top:22px;border:1px solid var(--line);background:#121a36bb;border-radius:14px;padding:16px;">
   <div class="panel-title" style="margin-bottom:8px;">MISSION OBJECTIVE</div>
   <p style="color:#c9c6df;font-size:13px;margin:0 0 12px;">Choose what your crew is working toward. Every mission has two stages: astronaut flight, then satellite rescue.</p>
@@ -167,7 +103,7 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 <div class="upgrade-panel" style="margin-top:22px;border:1px solid var(--line);background:#121a36bb;border-radius:14px;padding:16px;">
   <div class="panel-title" style="margin-bottom:8px;">MINIGAME 2 UPGRADE SHOP</div>
   <p style="color:#c9c6df;font-size:13px;margin:0 0 12px;">These upgrades only affect Satellite Rescue.</p>
-  <div id="upgradeShop" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;"></div>
+  <div id="upgradeShop" class="upgrade-grid"></div>
 </div>
 
 <div class="mission-history-panel" style="margin-top:22px; border:1px solid var(--line); background:#121a36bb; border-radius:14px; padding:16px;">
@@ -266,14 +202,20 @@ function launchCurrentMission(){
   localStorage.setItem('beyondEarthCampaign',JSON.stringify({objective:plan.objective,stage:1,startedAt:Date.now()}));
   window.location.href='minigames/defying-gravity/index.html';
 }
+function launchSatelliteRescue(){
+  const plan=getCurrentPlanFromForm();
+  SpaceMissionSystem.savePlan(plan);
+  localStorage.setItem('beyondEarthCampaign',JSON.stringify({objective:plan.objective,stage:2,startedAt:Date.now()}));
+  window.location.href='minigames/satellite-rescue/index.html';
+}
 function renderUpgradeShop(){
   const shop=document.getElementById('upgradeShop'),profile=SpaceMissionSystem.loadProfile();
   shop.innerHTML='';
   Object.entries(SpaceMissionSystem.UPGRADE_CATALOG).forEach(([key,item])=>{
     const level=Number(profile.upgrades[key]||0),cost=item.costs[level]??item.costs[item.costs.length-1];
     const card=document.createElement('div');
-    card.style.cssText='padding:12px;border:1px solid #4f4d78;background:#10162d;color:#fff;border-radius:12px;';
-    card.innerHTML=`<div style="font-weight:800;color:#ffe49a">${item.name}</div><div style="font-size:12px;color:#c9c6df;margin-top:6px">${item.description}</div><div style="font-size:12px;margin-top:8px">Cost: ${level>=item.maxLevel?'—':cost+' credits'} · Level ${level}/${item.maxLevel}</div><button style="margin-top:12px;width:100%;padding:10px;border:0;background:${level>=item.maxLevel?'#777':profile.credits>=cost?'#8ef2bf':'#8d8ea5'};color:#0d1022;font-weight:800;cursor:pointer;border-radius:10px" onclick="buyUpgrade('${key}')" ${level>=item.maxLevel?'disabled':''}>${level>=item.maxLevel?'MAXED OUT':'BUY'}</button>`;
+    card.className='upgrade-card';
+    card.innerHTML=`<div style="font-weight:800;color:#ffe49a">${item.name}</div><div class="upgrade-description" style="font-size:12px;color:#c9c6df">${item.description}</div><div class="upgrade-cost" style="font-size:12px">Cost: ${level>=item.maxLevel?'—':cost+' credits'} · Level ${level}/${item.maxLevel}</div><button class="upgrade-buy" style="background:${level>=item.maxLevel?'#777':profile.credits>=cost?'#8ef2bf':'#8d8ea5'}" onclick="buyUpgrade('${key}')" ${level>=item.maxLevel?'disabled':''}>${level>=item.maxLevel?'MAXED OUT':'BUY'}</button>`;
     shop.appendChild(card);
   });
   const balance=document.createElement('p');balance.style.cssText='grid-column:1/-1;color:#ffd98a;font-size:13px;margin:0';balance.textContent='Available credits: '+profile.credits;shop.appendChild(balance);
@@ -299,10 +241,21 @@ function renderMissionHistory(){
   history.forEach(report => {
     const item = document.createElement('div');
     item.style.cssText = 'padding:12px;border:1px solid #4f4d78;background:#10162d;color:#fff;border-radius:12px;';
+    const duration = Number(report.elapsedSeconds || 0);
+    const timeLabel = `${Math.floor(duration / 60)}m ${(duration % 60).toFixed(1)}s`;
+    const detail = report.key === 'knowledgeCheck'
+      ? `${report.details?.correctAnswers ?? 0}/${report.details?.totalQuestions ?? 0} correct answers • Best streak: ${report.details?.maxStreak ?? 0}`
+      : report.key === 'satelliteRescue'
+        ? `Attempts: ${report.details?.attempts ?? 0} • Hits: ${report.details?.hits ?? 0} • Rank: ${report.details?.tier ?? 0}`
+        : report.key === 'defyingGravity'
+          ? `Score when failed: ${report.details?.scoreAtFailure ?? report.score ?? 0}`
+          : '';
     item.innerHTML = `
-      <div style="font-weight:800;color:#ffd23f;">${report.objective || 'Mission'}</div>
-      <div style="font-size:12px;color:#c9c6df;">${report.outcome || 'Mission complete'} • ${report.score || 0} pts</div>
-      <div style="font-size:12px;color:#c9c6df;">${report.creditsEarned || 0} credits earned</div>
+      <div style="font-weight:800;color:#ffd23f;">${report.game || report.objective || 'Mission activity'}</div>
+      <div style="font-size:12px;color:#c9c6df;">${report.outcome || 'Mission complete'} • Score: ${report.score || 0} • High score: ${report.highScore ?? report.score ?? 0}</div>
+      <div style="font-size:12px;color:#c9c6df;">Time: ${report.elapsedSeconds == null ? '—' : timeLabel}${report.creditsEarned ? ` • ${report.creditsEarned} credits earned` : ''}</div>
+      ${detail ? `<div style="font-size:11px;color:#c9c6df;">${detail}</div>` : ''}
+      <div style="font-size:11px;color:#9895b9;">Objective: ${report.objective || 'Independent activity'} • ${report.date ? new Date(report.date).toLocaleString() : ''}</div>
     `;
     list.appendChild(item);
   });
@@ -310,43 +263,11 @@ function renderMissionHistory(){
 
 function openMission(file){window.location.href=file;}
 
-
-// Always show the Profile Page before entering the Dashboard.
-// If a profile already exists, load its information into the form.
-
 const saved = localStorage.getItem('beyondEarthProfile');
-
-if (saved) {
-  try {
-    const profile = JSON.parse(saved);
-
-    // Restore the player's name
-    document.getElementById('playerName').value =
-      profile.name || '';
-
-    // Restore the selected astronaut
-    selectedGender = profile.gender === 'girl' ? 'girl' : 'boy';
-
-    genderOptions.forEach(option => {
-      const isSelected = option.dataset.gender === selectedGender;
-
-      option.classList.toggle('selected', isSelected);
-      option.querySelector('input').checked = isSelected;
-    });
-
-    // Update astronaut preview
-    document.getElementById('previewAstronaut').textContent =
-      selectedGender === 'girl' ? '👩🏻‍🚀' : '👨🏻‍🚀';
-
-    // Change button for returning players
-    form.querySelector('button[type="submit"]').textContent =
-      'CONTINUE TO DASHBOARD';
-
-  } catch (error) {
-    localStorage.removeItem('beyondEarthProfile');
-  }
+if(saved){
+  try{showDashboard(JSON.parse(saved));}
+  catch(e){localStorage.removeItem('beyondEarthProfile');}
 }
-
 </script>
 </body>
 </html>
