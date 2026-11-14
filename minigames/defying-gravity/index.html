@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2c">
+  <title>Defying Gravity · Space Mission</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main class="cabinet" aria-label="Defying Gravity arcade mission">
+    <header class="topline"><span>★ FLIGHT DECK 01</span><span class="live"><i></i> EVA SIMULATION</span></header>
+    <div class="game-frame">
+      <canvas id="screen" width="320" height="180" aria-label="Pixel art astronaut flying through an asteroid field"></canvas>
+      <section id="overlay" class="overlay" aria-live="polite">
+        <p class="eyebrow">SPACE MISSION · ARCADE TRAINING</p>
+        <h1 id="title">DEFYING<br>GRAVITY</h1>
+        <p id="message">Tap, click, or press SPACE to boost.<br>Thread the asteroid field!</p>
+        <button id="start" type="button">START MISSION</button>
+      </section>
+    </div>
+    <footer><span>◀ SPACE / CLICK TO BOOST</span><span id="score-label">SCORE · 000</span><span>AVOID THE ROCKS ▶</span></footer>
+  </main>
+</body>
+</html>
