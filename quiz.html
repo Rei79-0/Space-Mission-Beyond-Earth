@@ -575,6 +575,7 @@
  
   </main> 
  
+  <script src="mission-history.js"></script>
   <script> 
     // ==================== 1. OFFICIAL CSA QUIZ DATA (100% PRESERVED) ==================== 
     const QUESTIONS = [ 
@@ -994,6 +995,9 @@
     }; 
  
     // ==================== 4. GAME STATE & INITIALIZATION ==================== 
+    let quizStartedAt = 0;
+    let quizHistorySaved = false;
+
     let player = { 
       name: "Cmdr. Maple", 
       avatarObj: AVATARS[0], 
@@ -1088,7 +1092,9 @@
     document.getElementById('start-btn').addEventListener('click', () => { 
       SFX.thruster(); 
       const rawName = document.getElementById('nickname-input').value.trim(); 
-      player.name = rawName || "Cmdr. Maple"; 
+      player.name = rawName || "Cmdr. Maple";
+      quizStartedAt = performance.now();
+      quizHistorySaved = false;
       player.score = 0; 
       player.streak = 0; 
       player.maxStreak = 0; 
@@ -1562,6 +1568,27 @@
         finalLb.appendChild(row); 
       }); 
  
+      // Save this quiz attempt once, including its score, duration and answer log.
+      if (!quizHistorySaved && window.BeyondEarthHistory) {
+        quizHistorySaved = true;
+        BeyondEarthHistory.record({
+          key: 'knowledgeCheck',
+          game: 'Knowledge Check',
+          status: 'completed',
+          outcome: 'Quiz completed',
+          score: player.score,
+          highScore: player.score,
+          elapsedSeconds: quizStartedAt ? (performance.now() - quizStartedAt) / 1000 : 0,
+          details: {
+            correctAnswers: player.correctCount,
+            totalQuestions: QUESTIONS.length,
+            maxStreak: player.maxStreak,
+            fastestAnswerSeconds: player.fastestTime,
+            answers: player.history
+          }
+        });
+      }
+
       // Mission Log Answer Key 
       const reviewContainer = document.getElementById('review-container'); 
       reviewContainer.innerHTML = ''; 
