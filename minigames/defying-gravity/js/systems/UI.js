@@ -117,15 +117,11 @@ class UI {
     ctx.fillText(`Score: ${score}   Best: ${best}`, W / 2, H / 2 + 5);
     ctx.fillStyle = '#ffd23f';
     ctx.font = `20px ${UI.FONT}`;
-    ctx.fillText(campaign ? 'STAGE 1 COMPLETE' : 'Press Space, Enter or click to retry', W / 2, H / 2 + 60);
+    ctx.fillText(campaign ? 'STAGE 1 FAILED' : 'Press Space, Enter or click to retry', W / 2, H / 2 + 60);
     if (campaign) {
-      ctx.fillStyle = '#2a8fa8';
-      ctx.fillRect(W / 2 - 210, H / 2 + 78, 420, 54);
-      ctx.strokeStyle = '#7fe8ff';
-      ctx.strokeRect(W / 2 - 210, H / 2 + 78, 420, 54);
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold 19px ${UI.FONT}`;
-      ctx.fillText('CONTINUE TO SATELLITE RESCUE', W / 2, H / 2 + 112);
+      ctx.fillStyle = '#b9c6f2';
+      ctx.font = `bold 17px ${UI.FONT}`;
+      ctx.fillText('RETURNING TO DASHBOARD...', W / 2, H / 2 + 105);
     }
   }
 }
