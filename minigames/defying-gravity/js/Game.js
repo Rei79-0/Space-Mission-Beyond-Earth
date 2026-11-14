@@ -25,10 +25,14 @@ class Game {
     this.bgOffset = 0;
     this.columnsSpawned = 0;
     this.lastTime = performance.now();
+    this.exitDialog = null;
+    this.wasPausedBeforeExitPrompt = false;
+    this.exitInProgress = false;
 
     this.input = new InputHandler(canvas, {
       onJump: () => this.jump(),
       onTogglePause: () => this.togglePause(),
+      onExitRequest: () => this.showExitConfirmation(),
       onPointer: (x, y) => this.handlePointer(x, y),
       onHidden: () => this.pauseIfPlaying()
     });
@@ -60,6 +64,41 @@ class Game {
   togglePause() {
     if (this.paused) this.paused = false;
     else if (this.state === GameState.PLAYING) this.paused = true;
+  }
+
+  showExitConfirmation() {
+    if (this.exitInProgress || this.exitDialog?.open) return;
+    this.wasPausedBeforeExitPrompt = this.paused;
+    this.paused = true;
+
+    if (!this.exitDialog) {
+      const styles = document.createElement('style');
+      styles.textContent = `#mission-exit-dialog{width:min(420px,calc(100vw - 40px));padding:24px;color:#f0f0ff;background:#15132b;border:2px solid #8f8bd8;font-family:Arial,sans-serif;box-shadow:8px 8px 0 #070612}#mission-exit-dialog::backdrop{background:rgba(5,4,18,.78)}#mission-exit-dialog h2{margin:0 0 14px;color:#ffd23f;font-size:20px}#mission-exit-dialog p{line-height:1.5;margin:0 0 22px}#mission-exit-dialog .exit-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}#mission-exit-dialog button{padding:10px 14px;border:2px solid #8f8bd8;background:#2a2850;color:#f0f0ff;font-weight:700;cursor:pointer}#mission-exit-dialog button:last-child{background:#5b2946;border-color:#ff9fc9}`;
+      document.head.appendChild(styles);
+      this.exitDialog = document.createElement('dialog');
+      this.exitDialog.id = 'mission-exit-dialog';
+      this.exitDialog.setAttribute('aria-labelledby', 'mission-exit-title');
+      this.exitDialog.innerHTML = '<h2 id="mission-exit-title">Exit Mission?</h2><p>Are you sure you want to leave this mission and return to the Space Mission dashboard?</p><div class="exit-actions"><button type="button" data-action="continue">No, Continue</button><button type="button" data-action="exit">Yes, Exit</button></div>';
+      document.body.appendChild(this.exitDialog);
+      this.exitDialog.querySelector('[data-action="continue"]').addEventListener('click', () => this.closeExitConfirmation());
+      this.exitDialog.querySelector('[data-action="exit"]').addEventListener('click', () => {
+        if (this.exitInProgress) return;
+        this.exitInProgress = true;
+        this.exitDialog.querySelectorAll('button').forEach(button => button.disabled = true);
+        window.location.assign('../../index.html');
+      });
+      this.exitDialog.addEventListener('cancel', event => {
+        event.preventDefault();
+        this.closeExitConfirmation();
+      });
+    }
+    this.exitDialog.showModal();
+  }
+
+  closeExitConfirmation() {
+    if (!this.exitDialog?.open || this.exitInProgress) return;
+    this.exitDialog.close();
+    this.paused = this.wasPausedBeforeExitPrompt;
   }
 
   pauseIfPlaying() {
