@@ -1,0 +1,1607 @@
+ 
+
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <title>CSA Mission Control — Astronaut Recruitment Arcade</title> 
+  <script src="https://cdn.tailwindcss.com"></script> 
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet"> 
+  <style> 
+    :root { 
+      --neon-cyan: #22d3ee; 
+      --neon-purple: #a855f7; 
+      --neon-amber: #fbbf24; 
+      --space-dark: #050816; 
+    } 
+ 
+    * { 
+      font-family: 'Montserrat', sans-serif; 
+      box-sizing: border-box; 
+      user-select: none; 
+    } 
+ 
+    .font-orbitron { 
+      font-family: 'Orbitron', sans-serif; 
+    } 
+ 
+    body { 
+      margin: 0; 
+      min-height: 100vh; 
+      background-color: var(--space-dark); 
+      color: #f8fafc; 
+      overflow-x: hidden; 
+    } 
+ 
+    /* Deep Space Interactive Canvas */ 
+    #space-canvas { 
+      position: fixed; 
+      inset: 0; 
+      width: 100%; 
+      height: 100%; 
+      z-index: 0; 
+      pointer-events: none; 
+    } 
+ 
+    /* Mission Control Glassmorphism Panels */ 
+    .hud-glass { 
+      background: rgba(11, 17, 36, 0.78); 
+      backdrop-filter: blur(14px); 
+      -webkit-backdrop-filter: blur(14px); 
+      border: 1px solid rgba(56, 189, 248, 0.25); 
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.12), inset 0 0 20px rgba(56, 189, 248, 0.05); 
+    } 
+ 
+    .hud-glass-strong { 
+      background: rgba(9, 13, 28, 0.88); 
+      backdrop-filter: blur(18px); 
+      -webkit-backdrop-filter: blur(18px); 
+      border: 1px solid rgba(168, 85, 247, 0.35); 
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 25px rgba(168, 85, 247, 0.18); 
+    } 
+ 
+    /* Kahoot 3D Tactile Geometric Tiles */ 
+    .kahoot-btn { 
+      position: relative; 
+      overflow: hidden; 
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease, opacity 0.3s ease, box-shadow 0.2s ease; 
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45), 0 10px 20px rgba(0, 0, 0, 0.35); 
+      border: 1px solid rgba(255, 255, 255, 0.22); 
+    } 
+    .kahoot-btn:hover:not(:disabled) { 
+      transform: translateY(-3px) scale(1.01); 
+      filter: brightness(1.1); 
+    } 
+    .kahoot-btn:active:not(:disabled) { 
+      transform: translateY(4px) scale(0.99); 
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45); 
+    } 
+    .kahoot-btn:disabled { 
+      cursor: default; 
+    } 
+ 
+    .btn-red { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); } 
+    .btn-blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); } 
+    .btn-yellow { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); } 
+    .btn-green { background: linear-gradient(135deg, #10b981 0%, #047857 100%); } 
+ 
+    /* Radar Scan Elimination Effect */ 
+    .eliminated-tile { 
+      opacity: 0.22 !important; 
+      filter: grayscale(85%) blur(0.5px); 
+      transform: scale(0.97) !important; 
+      pointer-events: none; 
+    } 
+    .eliminated-tile::after { 
+      content: "RADAR ELIMINATED"; 
+      position: absolute; 
+      inset: 0; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      background: rgba(15, 23, 42, 0.72); 
+      color: #f87171; 
+      font-family: 'Orbitron', sans-serif; 
+      font-size: 0.75rem; 
+      font-weight: 800; 
+      letter-spacing: 0.15em; 
+    } 
+ 
+    /* Time Dilation Stasis Glow */ 
+    .stasis-active { 
+      box-shadow: 0 0 28px #38bdf8, inset 0 0 18px #38bdf8 !important; 
+      border-color: #7dd3fc !important; 
+      background: linear-gradient(135deg, #0284c7, #0369a1) !important; 
+    } 
+ 
+    /* 2x Thruster Active Glow */ 
+    .thruster-active { 
+      box-shadow: 0 0 30px rgba(251, 191, 36, 0.45) !important; 
+      border-color: rgba(251, 191, 36, 0.8) !important; 
+    } 
+ 
+    /* Animations */ 
+    @keyframes popIn { 
+      0% { transform: scale(0.8); opacity: 0; } 
+      70% { transform: scale(1.04); opacity: 1; } 
+      100% { transform: scale(1); opacity: 1; } 
+    } 
+    .animate-pop { 
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+    } 
+ 
+    @keyframes slideUp { 
+      from { transform: translateY(24px); opacity: 0; } 
+      to { transform: translateY(0); opacity: 1; } 
+    } 
+    .animate-slide-up { 
+      animation: slideUp 0.35s ease-out forwards; 
+    } 
+ 
+    @keyframes shakeScreen { 
+      0%, 100% { transform: translate(0, 0); } 
+      20% { transform: translate(-6px, 4px); } 
+      40% { transform: translate(6px, -4px); } 
+      60% { transform: translate(-4px, -3px); } 
+      80% { transform: translate(4px, 3px); } 
+    } 
+    .shake-impact { 
+      animation: shakeScreen 0.38s ease-in-out; 
+    } 
+ 
+    @keyframes pulseUrgent { 
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); } 
+      50% { transform: scale(1.12); box-shadow: 0 0 22px 6px rgba(244, 63, 94, 0.45); } 
+    } 
+    .timer-urgent { 
+      animation: pulseUrgent 0.55s infinite; 
+      background: linear-gradient(135deg, #f43f5e, #be123c) !important; 
+    } 
+ 
+    @keyframes visorShine { 
+      0%, 100% { transform: translateX(-100%) rotate(25deg); } 
+      50% { transform: translateX(200%) rotate(25deg); } 
+    } 
+    .visor-glint { 
+      animation: visorShine 4s infinite ease-in-out; 
+    } 
+ 
+    @keyframes rocketHover { 
+      0%, 100% { transform: translateY(0px); } 
+      50% { transform: translateY(-4px); } 
+    } 
+    .rocket-float { 
+      animation: rocketHover 1.6s ease-in-out infinite; 
+    } 
+ 
+    /* Booster Chip Styling */ 
+    .booster-btn { 
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    } 
+    .booster-btn:hover:not(:disabled) { 
+      transform: translateY(-2px) scale(1.04); 
+    } 
+    .booster-btn:disabled { 
+      opacity: 0.32; 
+      filter: grayscale(100%); 
+      cursor: not-allowed; 
+      transform: none; 
+    } 
+ 
+    /* Custom Scrollbar */ 
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); } 
+    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.4); border-radius: 999px; } 
+  </style> 
+</head> 
+<body class="flex flex-col min-h-screen relative"> 
+  <!-- Interactive 60FPS Deep Space & Warp Canvas --> 
+  <canvas id="space-canvas"></canvas> 
+ 
+  <!-- ==================== TOP MISSION CONTROL HUD ==================== --> 
+  <header class="relative z-20 flex flex-wrap items-center justify-between gap-2 px-3 sm:px-6 py-2.5 hud-glass border-b border-cyan-500/20"> 
+    <!-- Agency Brand --> 
+    <div class="flex items-center gap-2.5"> 
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-600 via-red-600 to-amber-500 flex items-center justify-center shadow-lg border border-white/25 relative overflow-hidden"> 
+        <span class="text-xl drop-shadow">🍁</span> 
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent visor-glint"></div> 
+      </div> 
+      <div> 
+        <div class="flex items-center gap-1.5"> 
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> 
+          <span class="font-orbitron text-[10px] sm:text-xs uppercase tracking-widest text-cyan-300 font-bold">CSA // MISSION CONTROL</span> 
+        </div> 
+        <div class="font-extrabold text-xs sm:text-sm text-white tracking-wide">ASTRONAUT RECRUITMENT ARCADE</div> 
+      </div> 
+    </div> 
+ 
+    <!-- Live Altitude Trajectory Bar (Visible during gameplay) --> 
+    <div id="altitude-hud" class="hidden lg:flex flex-col flex-1 max-w-md mx-4"> 
+      <div class="flex justify-between text-[10px] font-orbitron font-bold uppercase tracking-wider text-cyan-300 mb-1"> 
+        <span id="altitude-zone">LAUNCHPAD // 0 KM</span> 
+        <span id="altitude-km" class="text-amber-300">ALT: 0 KM</span> 
+      </div> 
+      <div class="relative h-2.5 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-visible"> 
+        <div id="altitude-fill" class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-purple-500 to-amber-400 transition-all duration-700" style="width: 5%;"></div> 
+        <div id="altitude-rocket" class="absolute -top-2.5 transition-all duration-700 text-base rocket-float" style="left: 2%;">🚀</div> 
+      </div> 
+    </div> 
+ 
+    <!-- Right HUD Telemetry --> 
+    <div class="flex items-center gap-2 sm:gap-3"> 
+      <div id="hud-stats" class="hidden items-center gap-2 sm:gap-3"> 
+        <!-- Streak Flame --> 
+        <div id="streak-badge" class="bg-slate-900/80 border border-amber-500/30 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black flex items-center gap-1.5 transition-all"> 
+          <span id="streak-icon">🔥</span> 
+          <span id="hud-streak" class="font-orbitron text-amber-300">0</span> 
+        </div> 
+        <!-- Score Counter --> 
+        <div class="bg-gradient-to-r from-purple-900/90 to-indigo-900/90 border border-cyan-400/40 px-3 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm font-black shadow-inner"> 
+          <span id="hud-score" class="font-orbitron text-cyan-300">0</span> 
+          <span class="text-[10px] text-slate-300 ml-1">PTS</span> 
+        </div> 
+      </div> 
+ 
+      <!-- Sound Toggle --> 
+      <button id="sound-toggle" title="Toggle Space Audio" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/80 hover:bg-cyan-950 border border-cyan-500/30 flex items-center justify-center text-base sm:text-lg transition"> 
+        🔊 
+      </button> 
+    </div> 
+  </header> 
+ 
+  <!-- ==================== MAIN VIEWPORT ==================== --> 
+  <main id="app-main" class="relative z-10 flex-1 flex flex-col items-center justify-center p-3 sm:p-6 max-w-5xl w-full mx-auto"> 
+ 
+    <!-- ==================== 1. MISSION BRIEFING LOBBY ==================== --> 
+    <section id="screen-lobby" class="w-full max-w-xl hud-glass-strong rounded-3xl p-6 sm:p-8 animate-pop text-center relative overflow-hidden"> 
+      <!-- Decorative Corner Brackets --> 
+      <div class="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-cyan-400/60 rounded-tl"></div> 
+      <div class="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-cyan-400/60 rounded-tr"></div> 
+      <div class="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-cyan-400/60 rounded-bl"></div> 
+      <div class="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-cyan-400/60 rounded-br"></div> 
+ 
+      <div class="inline-flex items-center gap-2 bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 font-orbitron font-bold text-[11px] uppercase tracking-widest px-3.5 py-1 rounded-full mb-3"> 
+        <span>🛰️ MISSION PIN: CSA-2017</span> 
+      </div> 
+ 
+      <h1 class="text-2xl sm:text-3xl font-black text-white mb-2 leading-tight"> 
+        Do You Have What It Takes to Become a <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-amber-300">Canadian Astronaut?</span> 
+      </h1> 
+      <p class="text-slate-300 text-xs sm:text-sm mb-6 font-medium leading-relaxed"> 
+        10 official CSA recruitment questions. Answer rapidly for up to <strong class="text-amber-300">1,000 PTS</strong> per stage, deploy tactical boosters, and ascend from Earth to Deep Space! 
+      </p> 
+ 
+      <!-- Custom SVG Astronaut Helmet Avatar Selector --> 
+      <div class="mb-5"> 
+        <label class="block font-orbitron text-[11px] font-bold uppercase tracking-widest text-cyan-300 mb-2.5"> 
+          Select Flight Specialist Patch 
+        </label> 
+        <div id="avatar-grid" class="grid grid-cols-3 sm:grid-cols-6 gap-2.5 justify-items-center"> 
+          <!-- Populated by JS with crisp SVG helmets --> 
+        </div> 
+        <div id="avatar-role-label" class="mt-2 text-xs font-bold text-purple-300"> 
+          Role: Mission Commander 
+        </div> 
+      </div> 
+ 
+      <!-- Callsign Input & Difficulty --> 
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5"> 
+        <div class="sm:col-span-2"> 
+          <label class="block text-left font-orbitron text-[10px] uppercase tracking-wider text-slate-400 mb-1">Cadet Callsign</label> 
+          <input id="nickname-input" type="text" maxlength="16" placeholder="Enter Callsign..." value="Cmdr. Maple" 
+            class="w-full font-extrabold text-base px-4 py-3 rounded-xl bg-slate-950/80 border border-cyan-500/40 focus:border-cyan-300 focus:outline-none text-white placeholder-slate-500" /> 
+        </div> 
+        <div> 
+          <label class="block text-left font-orbitron text-[10px] uppercase tracking-wider text-slate-400 mb-1">Stage Clock</label> 
+          <select id="timer-select" class="w-full font-extrabold text-sm px-3 py-3.5 rounded-xl bg-slate-950/80 border border-cyan-500/40 text-cyan-200 focus:outline-none"> 
+            <option value="15">15s (Hyper)</option> 
+            <option value="20" selected>20s (Orbit)</option> 
+            <option value="30">30s (Cadet)</option> 
+          </select> 
+        </div> 
+      </div> 
+ 
+      <!-- Tactical Boosters Preview --> 
+      <div class="bg-slate-950/60 border border-white/10 rounded-2xl p-3 mb-6 text-left"> 
+        <div class="font-orbitron text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-2 text-center"> 
+          ⚡ Equipped Single-Use Spacecraft Boosters 
+        </div> 
+        <div class="grid grid-cols-3 gap-2 text-center text-[11px]"> 
+          <div class="bg-white/5 rounded-xl p-2 border border-white/10"> 
+            <div class="text-base mb-0.5">📡</div> 
+            <div class="font-extrabold text-cyan-200">50/50 Radar</div> 
+            <div class="text-[10px] text-slate-400">Cut 2 wrong</div> 
+          </div> 
+          <div class="bg-white/5 rounded-xl p-2 border border-white/10"> 
+            <div class="text-base mb-0.5">⏳</div> 
+            <div class="font-extrabold text-sky-300">Time Dilation</div> 
+            <div class="text-[10px] text-slate-400">Freeze clock 5s</div> 
+          </div> 
+          <div class="bg-white/5 rounded-xl p-2 border border-white/10"> 
+            <div class="text-base mb-0.5">🔥</div> 
+            <div class="font-extrabold text-amber-300">2x Thruster</div> 
+            <div class="text-[10px] text-slate-400">Double points</div> 
+          </div> 
+        </div> 
+      </div> 
+ 
+      <button id="start-btn" class="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-orbitron font-black text-base sm:text-lg tracking-wider shadow-lg shadow-cyan-500/25 transition transform active:scale-95 border border-white/25"> 
+        INITIATE LAUNCH SEQUENCE 🚀 
+      </button> 
+ 
+      <!-- Rival CSA Crew Roster --> 
+      <div class="mt-5 pt-4 border-t border-white/10"> 
+        <div class="font-orbitron text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2"> 
+          Active CSA Simulator Crew 
+        </div> 
+        <div class="flex flex-wrap justify-center gap-1.5 text-[11px] font-bold text-slate-200"> 
+          <span class="bg-white/10 px-2.5 py-1 rounded-full border border-white/10">👨‍🚀 Chris H.</span> 
+          <span class="bg-white/10 px-2.5 py-1 rounded-full border border-white/10">👩‍🚀 Roberta B.</span> 
+          <span class="bg-white/10 px-2.5 py-1 rounded-full border border-white/10">🌕 Jeremy H.</span> 
+          <span class="bg-white/10 px-2.5 py-1 rounded-full border border-white/10">🛰️ Jenni G.</span> 
+          <span class="bg-white/10 px-2.5 py-1 rounded-full border border-white/10">🛸 Joshua K.</span> 
+        </div> 
+      </div> 
+    </section> 
+ 
+    <!-- ==================== 2. WARP COUNTDOWN SPLASH ==================== --> 
+    <section id="screen-splash" class="hidden w-full text-center animate-pop"> 
+      <div class="inline-flex items-center gap-2 bg-cyan-500/20 border border-cyan-400/50 px-5 py-1.5 rounded-full font-orbitron text-xs sm:text-sm font-extrabold uppercase tracking-widest text-cyan-200 mb-3"> 
+        <span>STAGE <span id="splash-qnum">1</span> OF 10</span> 
+        <span>•</span> 
+        <span id="splash-stage-name" class="text-amber-300">TROPOSPHERE ASCENT</span> 
+      </div> 
+ 
+      <h2 id="splash-title" class="text-2xl sm:text-4xl font-black max-w-3xl mx-auto leading-snug mb-8 text-white drop-shadow-[0_4px_20px_rgba(34,211,238,0.4)]"> 
+        Preparing Telemetry... 
+      </h2> 
+ 
+      <div class="relative w-28 h-28 mx-auto flex items-center justify-center"> 
+        <div class="absolute inset-0 rounded-full border-4 border-dashed border-cyan-400 animate-spin" style="animation-duration: 4s;"></div> 
+        <div class="w-22 h-22 w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-cyan-600 border-2 border-white flex items-center justify-center font-orbitron text-4xl font-black shadow-[0_0_35px_rgba(34,211,238,0.7)]"> 
+          <span id="splash-countdown">3</span> 
+        </div> 
+      </div> 
+      <div class="mt-4 font-orbitron text-xs tracking-widest text-cyan-300 uppercase animate-pulse"> 
+        Engaging Main Thrusters... 
+      </div> 
+    </section> 
+ 
+    <!-- ==================== 3. ACTIVE MISSION QUESTION SCREEN ==================== --> 
+    <section id="screen-question" class="hidden w-full flex-col gap-4"> 
+      <!-- Live Rival Telemetry Ticker --> 
+      <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-2xl hud-glass text-xs"> 
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar" id="rival-ticker"> 
+          <span class="font-orbitron text-[10px] text-cyan-400 font-bold uppercase shrink-0">LIVE COMMS:</span> 
+          <span class="text-slate-300 text-[11px] italic">Scanning rival spacecraft telemetry...</span> 
+        </div> 
+        <div class="hidden sm:flex items-center gap-1.5 text-[10px] font-orbitron text-slate-400 shrink-0"> 
+          <span>KEYS:</span> 
+          <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-cyan-300">1-4</kbd> 
+        </div> 
+      </div> 
+ 
+      <!-- Main Question Telemetry Deck --> 
+      <div id="question-card" class="hud-glass-strong rounded-3xl p-5 sm:p-7 relative overflow-hidden transition-all"> 
+        <!-- Top Countdown Progress Bar --> 
+        <div class="absolute top-0 left-0 right-0 h-2 bg-slate-900"> 
+          <div id="time-bar" class="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-amber-400 transition-all duration-100 linear" style="width: 100%;"></div> 
+        </div> 
+ 
+        <div class="flex items-center justify-between gap-3 mb-3"> 
+          <div class="flex items-center gap-2"> 
+            <span class="bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 font-orbitron text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full"> 
+              Q<span id="q-index">1</span>/10 
+            </span> 
+            <span id="double-active-pill" class="hidden bg-amber-400 text-slate-950 font-orbitron text-[10px] font-black uppercase px-2.5 py-1 rounded-full animate-bounce"> 
+              🔥 2X THRUSTER ACTIVE 
+            </span> 
+          </div> 
+ 
+          <!-- Circular Chronometer --> 
+          <div id="timer-circle" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 border-2 border-cyan-300 text-white flex flex-col items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.4)] shrink-0 transition-all"> 
+            <span id="timer-value" class="font-orbitron text-xl sm:text-2xl font-black leading-none">20</span> 
+            <span id="timer-label" class="font-orbitron text-[8px] uppercase tracking-widest text-cyan-200">SEC</span> 
+          </div> 
+ 
+          <span id="q-credit" class="text-[11px] font-semibold text-slate-400 text-right hidden sm:inline max-w-[160px]"> 
+            Credit: NASA 
+          </span> 
+        </div> 
+ 
+        <h2 id="q-text" class="text-lg sm:text-2xl md:text-3xl font-black text-center text-white leading-snug py-2 sm:py-3"> 
+          Who can apply? 
+        </h2> 
+      </div> 
+ 
+      <!-- Tactical Spacecraft Boosters Bar --> 
+      <div class="grid grid-cols-3 gap-2.5 sm:gap-3"> 
+        <button id="booster-5050" type="button" class="booster-btn hud-glass hover:border-cyan-400 rounded-2xl p-2.5 sm:p-3 flex items-center justify-center gap-2 text-left"> 
+          <span class="text-lg sm:text-xl">📡</span> 
+          <div> 
+            <div class="font-orbitron text-[10px] sm:text-xs font-extrabold text-cyan-300">50/50 RADAR</div> 
+            <div class="text-[10px] text-slate-400 hidden sm:block">Eliminate 2 options</div> 
+          </div> 
+        </button> 
+ 
+        <button id="booster-freeze" type="button" class="booster-btn hud-glass hover:border-sky-400 rounded-2xl p-2.5 sm:p-3 flex items-center justify-center gap-2 text-left"> 
+          <span class="text-lg sm:text-xl">⏳</span> 
+          <div> 
+            <div class="font-orbitron text-[10px] sm:text-xs font-extrabold text-sky-300">TIME DILATION</div> 
+            <div class="text-[10px] text-slate-400 hidden sm:block">Freeze timer 5s</div> 
+          </div> 
+        </button> 
+ 
+        <button id="booster-double" type="button" class="booster-btn hud-glass hover:border-amber-400 rounded-2xl p-2.5 sm:p-3 flex items-center justify-center gap-2 text-left"> 
+          <span class="text-lg sm:text-xl">🔥</span> 
+          <div> 
+            <div class="font-orbitron text-[10px] sm:text-xs font-extrabold text-amber-300">2X THRUSTER</div> 
+            <div class="text-[10px] text-slate-400 hidden sm:block">Double stage score</div> 
+          </div> 
+        </button> 
+      </div> 
+ 
+      <!-- 4 Geometric Kahoot Answer Tiles --> 
+      <div id="answers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"> 
+        <!-- Populated dynamically --> 
+      </div> 
+    </section> 
+ 
+    <!-- ==================== 4. STAGE DEBRIEF & ORBITAL TELEMETRY ==================== --> 
+    <section id="screen-feedback" class="hidden w-full max-w-2xl flex-col items-center gap-4 animate-slide-up"> 
+      <!-- Result Banner --> 
+      <div id="result-banner" class="w-full rounded-3xl p-5 sm:p-6 text-center shadow-2xl border border-white/25 relative overflow-hidden"> 
+        <div id="result-callout" class="font-orbitron text-[11px] font-black uppercase tracking-widest text-white/85 mb-1"> 
+          TRAJECTORY NOMINAL 
+        </div> 
+        <div class="flex items-center justify-center gap-3 mb-1"> 
+          <span id="result-icon" class="text-4xl sm:text-5xl">🚀</span> 
+          <h2 id="result-title" class="text-2xl sm:text-3xl font-black tracking-tight text-white">Correct!</h2> 
+        </div> 
+        <div id="result-points" class="inline-block bg-black/35 border border-white/20 px-4 py-1.5 rounded-full font-orbitron font-extrabold text-xs sm:text-sm text-amber-300 mb-3"> 
+          +940 PTS 
+        </div> 
+        <p id="result-rationale" class="text-white text-xs sm:text-sm font-medium max-w-xl mx-auto leading-relaxed bg-slate-950/45 border border-white/15 p-3.5 rounded-2xl text-left"> 
+          Official CSA explanation goes here. 
+        </p> 
+      </div> 
+ 
+      <!-- Orbital Standings & Rocket Progress --> 
+      <div class="w-full hud-glass-strong rounded-3xl p-5 shadow-2xl"> 
+        <div class="flex items-center justify-between mb-3"> 
+          <h3 class="font-orbitron font-black text-sm sm:text-base uppercase tracking-wider text-cyan-300"> 
+            🏆 Squadron Telemetry Standings 
+          </h3> 
+          <span id="feedback-altitude-tag" class="font-orbitron text-[11px] font-bold text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full border border-amber-400/30"> 
+            ALT: 40 KM 
+          </span> 
+        </div> 
+        <div id="leaderboard-list" class="flex flex-col gap-2"> 
+          <!-- Populated dynamically --> 
+        </div> 
+      </div> 
+ 
+      <button id="next-btn" class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-orbitron font-black text-sm sm:text-base tracking-wider shadow-xl shadow-cyan-500/20 transition transform active:scale-95"> 
+        NEXT STAGE ➔ 
+      </button> 
+    </section> 
+ 
+    <!-- ==================== 5. ORBITAL VICTORY PODIUM ==================== --> 
+    <section id="screen-podium" class="hidden w-full max-w-3xl flex-col items-center text-center animate-pop"> 
+      <div class="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-300 text-amber-300 font-orbitron font-black text-xs uppercase tracking-widest px-4 py-1.5 rounded-full mb-2"> 
+        <span>🌌 DEEP SPACE MISSION COMPLETE</span> 
+      </div> 
+      <h1 class="text-3xl sm:text-5xl font-black text-white mb-1">CSA Orbital Podium</h1> 
+      <div id="final-rank-badge" class="font-orbitron text-sm sm:text-base font-extrabold text-cyan-300 mb-6"> 
+        OFFICIAL CSA RATING: FLIGHT COMMANDER 
+      </div> 
+ 
+      <!-- 3-Tier Illuminated Launchpad Podium --> 
+      <div class="flex items-end justify-center gap-3 sm:gap-6 w-full max-w-xl h-64 mb-6 px-2"> 
+        <!-- 2nd Place --> 
+        <div class="flex-1 flex flex-col items-center"> 
+          <div id="podium-2-avatar" class="mb-1"></div> 
+          <div id="podium-2-name" class="font-extrabold text-xs sm:text-sm truncate max-w-[105px] mb-0.5 text-slate-200">Roberta B.</div> 
+          <div id="podium-2-score" class="font-orbitron text-[11px] font-bold text-cyan-300 mb-2">7,200</div> 
+          <div class="w-full h-32 bg-gradient-to-t from-slate-700/90 via-slate-400/90 to-slate-200 text-slate-950 rounded-t-2xl flex flex-col items-center justify-center shadow-xl border-t-4 border-white"> 
+            <span class="font-orbitron text-3xl font-black">2</span> 
+            <span class="font-orbitron text-[9px] font-extrabold uppercase tracking-wider">Payload Spec.</span> 
+          </div> 
+        </div> 
+ 
+        <!-- 1st Place --> 
+        <div class="flex-1 flex flex-col items-center"> 
+          <div class="text-2xl mb-0.5 animate-bounce">👑</div> 
+          <div id="podium-1-avatar" class="mb-1"></div> 
+          <div id="podium-1-name" class="font-black text-sm sm:text-base truncate max-w-[125px] mb-0.5 text-white">You</div> 
+          <div id="podium-1-score" class="font-orbitron text-xs font-extrabold text-amber-300 mb-2">8,950</div> 
+          <div class="w-full h-44 bg-gradient-to-t from-amber-600 via-amber-400 to-yellow-200 text-slate-950 rounded-t-2xl flex flex-col items-center justify-center shadow-[0_0_35px_rgba(251,191,36,0.45)] border-t-4 border-white"> 
+            <span class="font-orbitron text-4xl font-black">1</span> 
+            <span class="font-orbitron text-[10px] font-black uppercase tracking-wider">Commander</span> 
+          </div> 
+        </div> 
+ 
+        <!-- 3rd Place --> 
+        <div class="flex-1 flex flex-col items-center"> 
+          <div id="podium-3-avatar" class="mb-1"></div> 
+          <div id="podium-3-name" class="font-extrabold text-xs sm:text-sm truncate max-w-[105px] mb-0.5 text-slate-200">Chris H.</div> 
+          <div id="podium-3-score" class="font-orbitron text-[11px] font-bold text-cyan-300 mb-2">6,540</div> 
+          <div class="w-full h-24 bg-gradient-to-t from-amber-950 via-amber-700 to-amber-500 text-white rounded-t-2xl flex flex-col items-center justify-center shadow-xl border-t-4 border-amber-300"> 
+            <span class="font-orbitron text-2xl font-black">3</span> 
+            <span class="font-orbitron text-[9px] font-extrabold uppercase tracking-wider">Flight Eng.</span> 
+          </div> 
+        </div> 
+      </div> 
+ 
+      <!-- Mission Debrief Telemetry Cards --> 
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 w-full mb-5"> 
+        <div class="hud-glass rounded-2xl p-3"> 
+          <div class="font-orbitron text-[10px] text-slate-400 uppercase">Accuracy</div> 
+          <div id="stat-accuracy" class="font-orbitron text-lg sm:text-xl font-black text-emerald-400">80%</div> 
+        </div> 
+        <div class="hud-glass rounded-2xl p-3"> 
+          <div class="font-orbitron text-[10px] text-slate-400 uppercase">Max Streak</div> 
+          <div id="stat-streak" class="font-orbitron text-lg sm:text-xl font-black text-amber-300">4 🔥</div> 
+        </div> 
+        <div class="hud-glass rounded-2xl p-3"> 
+          <div class="font-orbitron text-[10px] text-slate-400 uppercase">Fastest Lock</div> 
+          <div id="stat-speed" class="font-orbitron text-lg sm:text-xl font-black text-cyan-300">1.8s</div> 
+        </div> 
+        <div class="hud-glass rounded-2xl p-3"> 
+          <div class="font-orbitron text-[10px] text-slate-400 uppercase">Peak Orbit</div> 
+          <div id="stat-altitude" class="font-orbitron text-lg sm:text-xl font-black text-purple-300">408 km</div> 
+        </div> 
+      </div> 
+ 
+      <!-- Full Standings & Official CSA Answer Key --> 
+      <div class="w-full hud-glass-strong rounded-3xl p-5 sm:p-6 shadow-2xl mb-6 text-left"> 
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4"> 
+          <h3 class="font-orbitron font-black text-sm sm:text-base text-cyan-300 uppercase tracking-wider"> 
+            📊 Final Squadron Standings 
+          </h3> 
+          <button id="toggle-review-btn" class="font-orbitron text-[11px] font-extrabold bg-purple-600/40 border border-purple-400/50 text-purple-200 px-3.5 py-1.5 rounded-xl hover:bg-purple-600/60 transition"> 
+            Inspect Mission Log 
+          </button> 
+        </div> 
+        <div id="final-leaderboard" class="flex flex-col gap-2"></div> 
+        <div id="review-container" class="hidden mt-5 pt-5 border-t border-white/15 flex-col gap-3"></div> 
+      </div> 
+ 
+      <button id="play-again-btn" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 font-orbitron font-black text-base tracking-wider shadow-xl shadow-emerald-500/20 transition transform active:scale-95"> 
+        REPLAY MISSION 🔄 
+      </button> 
+    </section> 
+ 
+  </main> 
+ 
+  <script> 
+    // ==================== 1. OFFICIAL CSA QUIZ DATA (100% PRESERVED) ==================== 
+    const QUESTIONS = [ 
+      { 
+        question: "Who can apply?", 
+        credit: "Credit: NASA", 
+        stage: "LAUNCHPAD IGNITION", 
+        altitudeKm: 12, 
+        options: [ 
+          "Canadian citizens living in Canada exclusively", 
+          "Canadian citizens living in Canada or abroad", 
+          "Persons residing in Canada and Canadian citizens residing abroad", 
+          "Martian citizens living in Canada" 
+        ], 
+        correctIndex: 2, 
+        explanation: "Persons residing in Canada (including permanent residents) and Canadian citizens residing abroad can apply, with preference given to Canadian citizens." 
+      }, 
+      { 
+        question: "Candidates are required to speak which language(s) proficiently?", 
+        credit: "Credit: Canadian Space Agency/Chris Hadfield", 
+        stage: "TROPOSPHERE ASCENT", 
+        altitudeKm: 35, 
+        options: [ 
+          "English OR French", 
+          "English AND French", 
+          "English, French AND Russian", 
+          "English, French AND Frenglish" 
+        ], 
+        correctIndex: 0, 
+        explanation: "Candidates must be proficient in either English OR French. Knowledge of both official languages (or Russian) is a strong asset, though not mandatory to apply." 
+      }, 
+      { 
+        question: "Candidates must have which university degree to be eligible?", 
+        credit: "Credit: Canadian Space Agency", 
+        stage: "STRATOSPHERE CLIMB", 
+        altitudeKm: 65, 
+        options: [ 
+          "Bachelor's degree in engineering", 
+          "Bachelor's degree in science (e.g., nursing, physics, chemistry, biology, geology, mathematics, computer science)", 
+          "Doctorate in medicine or dentistry", 
+          "Any of the above" 
+        ], 
+        correctIndex: 3, 
+        explanation: "All three educational pathways qualify! Applicants need a recognized bachelor's degree in engineering or science, or a doctorate in medicine or dentistry." 
+      }, 
+      { 
+        question: "In addition to the educational requirements, applicants must have how many years of professional experience?", 
+        credit: "Credit: Ontario Science Center", 
+        stage: "MESOSPHERE THRESHOLD", 
+        altitudeKm: 88, 
+        options: [ 
+          "None", 
+          "At least 1 year of professional experience AND a licence to fly in Canada", 
+          "At least 3 years of professional experience OR a licence to practise medicine in Canada", 
+          "At least 5 years of professional experience" 
+        ], 
+        correctIndex: 2, 
+        explanation: "Applicants need at least 3 years of relevant professional experience (a master's counts as 1 year; a PhD counts as 3 years) OR a licence to practise medicine in Canada." 
+      }, 
+      { 
+        question: "Which qualities and skills are required to be part of the Canadian Space Agency's astronaut corps?", 
+        credit: "Credit: NASA", 
+        stage: "KÁRMÁN LINE CROSSING", 
+        altitudeKm: 100, 
+        options: [ 
+          "Motivation", 
+          "Resourcefulness", 
+          "Ability to work in a team", 
+          "All of the above" 
+        ], 
+        correctIndex: 3, 
+        explanation: "Astronauts must demonstrate motivation, resourcefulness, teamwork, sound judgment, integrity, reasoning, and public speaking skills." 
+      }, 
+      { 
+        question: "What is the required height to be eligible?", 
+        credit: "Credit: NASA/Victor Zelentsov", 
+        stage: "THERMOSPHERE BOOST", 
+        altitudeKm: 220, 
+        options: [ 
+          "Between 149.5 cm and 190.5 cm (between 4'9\" and 6'2.5\")", 
+          "Between 152.4 cm and 200.0 cm (between 5' and 6'5.5\")", 
+          "At least 152.4 cm (at least 5'0\")", 
+          "At least 161.5 cm (at least 5'3\")" 
+        ], 
+        correctIndex: 0, 
+        explanation: "Candidates must measure between 149.5 cm and 190.5 cm so they can safely fit inside spacecraft seats and spacesuits." 
+      }, 
+      { 
+        question: "What is the required weight to be eligible?", 
+        credit: "Credit: NASA", 
+        stage: "ISS ORBITAL RENDEZVOUS", 
+        altitudeKm: 408, 
+        options: [ 
+          "Between 50 kg and 85 kg (between 110 lb. and 187 lb.)", 
+          "Between 50 kg and 95 kg (between 110 lb. and 209 lb.)", 
+          "Between 55 kg and 100 kg (between 121 lb. and 220 lb.)", 
+          "Less than 80 kg (less than 176 lb.)" 
+        ], 
+        correctIndex: 1, 
+        explanation: "Applicants must weigh between 50 kg and 95 kg (110 lb. to 209 lb.) to meet spacecraft safety and life-support specifications." 
+      }, 
+      { 
+        question: "What kind of visual acuity is needed to be eligible?", 
+        credit: "Credit: Canadian Space Agency", 
+        stage: "CANADARM2 EVA WALK", 
+        altitudeKm: 1500, 
+        options: [ 
+          "20/40 visual acuity or better in each eye, without correction", 
+          "20/40 visual acuity or better in each eye, with or without correction", 
+          "20/20 visual acuity or better in each eye, without correction", 
+          "20/20 visual acuity or better in each eye, with or without correction" 
+        ], 
+        correctIndex: 3, 
+        explanation: "Candidates must have 20/20 (6/6) visual acuity or better in each eye, WITH or WITHOUT corrective lenses/surgery, and normal colour vision." 
+      }, 
+      { 
+        question: "What is the required age to apply?", 
+        credit: "Credit: Canadian Space Agency", 
+        stage: "LUNAR GATEWAY TRANSIT", 
+        altitudeKm: 384400, 
+        options: [ 
+          "There is no age requirement", 
+          "25 and older", 
+          "Between 25 and 50", 
+          "50 and younger" 
+        ], 
+        correctIndex: 0, 
+        explanation: "There is no age restriction! Eligibility is based on education, professional experience, and passing strict medical and physical evaluations." 
+      }, 
+      { 
+        question: "How many astronauts were selected during the Canadian Space Agency's 2017 recruitment campaign?", 
+        credit: "Credit: Canadian Space Agency", 
+        stage: "DEEP SPACE CORPS INDUCTION", 
+        altitudeKm: 1500000, 
+        options: [ 
+          "1", 
+          "2", 
+          "3", 
+          "4" 
+        ], 
+        correctIndex: 1, 
+        explanation: "Out of 3,772 applicants, 2 astronauts were selected in July 2017: Joshua Kutryk and Jenni Gibbons!" 
+      } 
+    ]; 
+ 
+    // Custom SVG Astronaut Helmet Avatars 
+    const AVATARS = [ 
+      { id: "cmdr", role: "Mission Commander", visor: "#fbbf24", suit: "#f8fafc", accent: "#e11d48" }, 
+      { id: "canadarm", role: "Canadarm2 Specialist", visor: "#22d3ee", suit: "#e2e8f0", accent: "#0284c7" }, 
+      { id: "lunar", role: "Lunar Gateway Pilot", visor: "#a855f7", suit: "#f1f5f9", accent: "#7e22ce" }, 
+      { id: "bio", role: "Astrobiologist", visor: "#34d399", suit: "#ecfdf5", accent: "#059669" }, 
+      { id: "flight", role: "Flight Engineer", visor: "#f97316", suit: "#fff7ed", accent: "#ea580c" }, 
+      { id: "deep", role: "Deep Space Explorer", visor: "#f472b6", suit: "#fdf2f8", accent: "#db2777" } 
+    ]; 
+ 
+    function renderHelmetSVG(av, sizeClass = "w-10 h-10") { 
+      return ` 
+        <svg class="${sizeClass} shrink-0 drop-shadow-md" viewBox="0 0 64 64" fill="none"> 
+          <circle cx="32" cy="32" r="28" fill="${av.suit}" stroke="${av.accent}" stroke-width="3.5"/> 
+          <rect x="8" y="24" width="6" height="16" rx="3" fill="${av.accent}"/> 
+          <rect x="50" y="24" width="6" height="16" rx="3" fill="${av.accent}"/> 
+          <rect x="15" y="17" width="34" height="26" rx="12" fill="#0f172a" stroke="${av.visor}" stroke-width="2.5"/> 
+          <path d="M19 24C22 20 30 19 36 21" stroke="${av.visor}" stroke-width="3" stroke-linecap="round" opacity="0.85"/> 
+          <circle cx="43" cy="24" r="2" fill="#ffffff" opacity="0.8"/> 
+          <path d="M22 49H42" stroke="${av.accent}" stroke-width="3" stroke-linecap="round"/> 
+        </svg> 
+      `; 
+    } 
+ 
+    // Kahoot Geometric Shapes 
+    const TILE_STYLES = [ 
+      { 
+        bg: "btn-red", 
+        key: "1", 
+        svg: `<svg class="w-7 h-7 sm:w-8 sm:h-8 fill-white shrink-0 drop-shadow" viewBox="0 0 24 24"><polygon points="12,3 22,20 2,20"/></svg>` 
+      }, 
+      { 
+        bg: "btn-blue", 
+        key: "2", 
+        svg: `<svg class="w-7 h-7 sm:w-8 sm:h-8 fill-white shrink-0 drop-shadow" viewBox="0 0 24 24"><polygon points="12,2 22,12 12,22 2,12"/></svg>` 
+      }, 
+      { 
+        bg: "btn-yellow", 
+        key: "3", 
+        svg: `<svg class="w-7 h-7 sm:w-8 sm:h-8 fill-white shrink-0 drop-shadow" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>` 
+      }, 
+      { 
+        bg: "btn-green", 
+        key: "4", 
+        svg: `<svg class="w-7 h-7 sm:w-8 sm:h-8 fill-white shrink-0 drop-shadow" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>` 
+      } 
+    ]; 
+ 
+    // ==================== 2. INTERACTIVE DEEP SPACE & WARP CANVAS ==================== 
+    const canvas = document.getElementById('space-canvas'); 
+    const ctx = canvas.getContext('2d'); 
+    let width = canvas.width = window.innerWidth; 
+    let height = canvas.height = window.innerHeight; 
+ 
+    window.addEventListener('resize', () => { 
+      width = canvas.width = window.innerWidth; 
+      height = canvas.height = window.innerHeight; 
+    }); 
+ 
+    let warpFactor = 1; 
+    let targetWarp = 1; 
+    const stars = []; 
+    const particles = []; 
+    const asteroids = []; 
+ 
+    for (let i = 0; i < 160; i++) { 
+      stars.push({ 
+        x: (Math.random() - 0.5) * width * 2, 
+        y: (Math.random() - 0.5) * height * 2, 
+        z: Math.random() * 1000 + 100, 
+        color: ['#ffffff', '#bae6fd', '#e9d5ff', '#fef08a'][Math.floor(Math.random() * 4)] 
+      }); 
+    } 
+ 
+    for (let i = 0; i < 7; i++) { 
+      asteroids.push({ 
+        x: Math.random() * width, 
+        y: Math.random() * height, 
+        r: 10 + Math.random() * 18, 
+        vx: (Math.random() - 0.5) * 0.4, 
+        vy: 0.15 + Math.random() * 0.35, 
+        rot: Math.random() * Math.PI * 2, 
+        vrot: (Math.random() - 0.5) * 0.01 
+      }); 
+    } 
+ 
+    function spawnBurst(x, y, color, count = 28) { 
+      for (let i = 0; i < count; i++) { 
+        const angle = Math.random() * Math.PI * 2; 
+        const speed = 2 + Math.random() * 7; 
+        particles.push({ 
+          x, y, 
+          vx: Math.cos(angle) * speed, 
+          vy: Math.sin(angle) * speed, 
+          life: 1, 
+          decay: 0.018 + Math.random() * 0.02, 
+          size: 3 + Math.random() * 4, 
+          color 
+        }); 
+      } 
+    } 
+ 
+    function animateSpace() { 
+      warpFactor += (targetWarp - warpFactor) * 0.06; 
+ 
+      // Deep Cosmos Gradient Backdrop 
+      const bgGrad = ctx.createRadialGradient(width * 0.5, height * 0.35, 40, width * 0.5, height * 0.5, Math.max(width, height)); 
+      bgGrad.addColorStop(0, '#131b42'); 
+      bgGrad.addColorStop(0.55, '#090d24'); 
+      bgGrad.addColorStop(1, '#03050f'); 
+      ctx.fillStyle = bgGrad; 
+      ctx.fillRect(0, 0, width, height); 
+ 
+      // Subtle Nebula Glows 
+      const neb1 = ctx.createRadialGradient(width * 0.2, height * 0.25, 10, width * 0.2, height * 0.25, 320); 
+      neb1.addColorStop(0, 'rgba(139, 92, 246, 0.14)'); 
+      neb1.addColorStop(1, 'rgba(0,0,0,0)'); 
+      ctx.fillStyle = neb1; 
+      ctx.fillRect(0, 0, width, height); 
+ 
+      const neb2 = ctx.createRadialGradient(width * 0.8, height * 0.75, 10, width * 0.8, height * 0.75, 340); 
+      neb2.addColorStop(0, 'rgba(14, 165, 233, 0.13)'); 
+      neb2.addColorStop(1, 'rgba(0,0,0,0)'); 
+      ctx.fillStyle = neb2; 
+      ctx.fillRect(0, 0, width, height); 
+ 
+      // Drifting Space Rocks / Satellites 
+      asteroids.forEach(a => { 
+        a.x += a.vx; 
+        a.y += a.vy * (0.6 + warpFactor * 0.25); 
+        a.rot += a.vrot; 
+        if (a.y > height + 40) { a.y = -40; a.x = Math.random() * width; } 
+        if (a.x > width + 40) a.x = -40; 
+        if (a.x < -40) a.x = width + 40; 
+ 
+        ctx.save(); 
+        ctx.translate(a.x, a.y); 
+        ctx.rotate(a.rot); 
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)'; 
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.35)'; 
+        ctx.lineWidth = 1.5; 
+        ctx.beginPath(); 
+        for (let s = 0; s < 7; s++) { 
+          const ang = (s / 7) * Math.PI * 2; 
+          const rad = a.r * (0.8 + (s % 2) * 0.25); 
+          if (s === 0) ctx.moveTo(Math.cos(ang) * rad, Math.sin(ang) * rad); 
+          else ctx.lineTo(Math.cos(ang) * rad, Math.sin(ang) * rad); 
+        } 
+        ctx.closePath(); 
+        ctx.fill(); 
+        ctx.stroke(); 
+        ctx.restore(); 
+      }); 
+ 
+      // 3D Parallax Starfield with Warp Streaks 
+      const cx = width / 2; 
+      const cy = height / 2; 
+ 
+      stars.forEach(st => { 
+        const prevZ = st.z; 
+        st.z -= 2.2 * warpFactor; 
+        if (st.z <= 1) { 
+          st.x = (Math.random() - 0.5) * width * 2; 
+          st.y = (Math.random() - 0.5) * height * 2; 
+          st.z = 1000; 
+          return; 
+        } 
+ 
+        const sx = cx + (st.x / st.z) * 320; 
+        const sy = cy + (st.y / st.z) * 320; 
+        const px = cx + (st.x / prevZ) * 320; 
+        const py = cy + (st.y / prevZ) * 320; 
+ 
+        const size = Math.max(0.8, (1 - st.z / 1000) * 3.2); 
+        ctx.strokeStyle = st.color; 
+        ctx.fillStyle = st.color; 
+        ctx.lineWidth = size; 
+ 
+        if (warpFactor > 2.2) { 
+          ctx.beginPath(); 
+          ctx.moveTo(px, py); 
+          ctx.lineTo(sx, sy); 
+          ctx.stroke(); 
+        } else { 
+          ctx.beginPath(); 
+          ctx.arc(sx, sy, size * 0.7, 0, Math.PI * 2); 
+          ctx.fill(); 
+        } 
+      }); 
+ 
+      // Thruster / Celebration Particles 
+      for (let i = particles.length - 1; i >= 0; i--) { 
+        const p = particles[i]; 
+        p.x += p.vx; 
+        p.y += p.vy; 
+        p.vy += 0.08; 
+        p.life -= p.decay; 
+        if (p.life <= 0) { 
+          particles.splice(i, 1); 
+          continue; 
+        } 
+        ctx.globalAlpha = p.life; 
+        ctx.fillStyle = p.color; 
+        ctx.beginPath(); 
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); 
+        ctx.fill(); 
+      } 
+      ctx.globalAlpha = 1; 
+ 
+      requestAnimationFrame(animateSpace); 
+    } 
+    animateSpace(); 
+ 
+    // ==================== 3. PROCEDURAL WEB AUDIO SPACE SOUNDSCAPE ==================== 
+    let soundEnabled = true; 
+    let audioCtx = null; 
+ 
+    function initAudio() { 
+      if (!audioCtx) { 
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+      } 
+      if (audioCtx.state === 'suspended') { 
+        audioCtx.resume(); 
+      } 
+    } 
+ 
+    function playTone(freq, type = 'sine', duration = 0.15, delay = 0, vol = 0.14) { 
+      if (!soundEnabled) return; 
+      initAudio(); 
+      const osc = audioCtx.createOscillator(); 
+      const gain = audioCtx.createGain(); 
+      osc.type = type; 
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay); 
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime + delay); 
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration); 
+      osc.connect(gain); 
+      gain.connect(audioCtx.destination); 
+      osc.start(audioCtx.currentTime + delay); 
+      osc.stop(audioCtx.currentTime + delay + duration); 
+    } 
+ 
+    const SFX = { 
+      click: () => playTone(640, 'sine', 0.07, 0, 0.11), 
+      radar: () => { 
+        playTone(980, 'sine', 0.12, 0, 0.14); 
+        playTone(1320, 'sine', 0.18, 0.08, 0.12); 
+      }, 
+      freeze: () => { 
+        playTone(720, 'triangle', 0.25, 0, 0.15); 
+        playTone(480, 'sine', 0.35, 0.12, 0.15); 
+      }, 
+      thruster: () => { 
+        playTone(220, 'sawtooth', 0.22, 0, 0.14); 
+        playTone(440, 'triangle', 0.25, 0.08, 0.16); 
+      }, 
+      tick: () => playTone(880, 'sine', 0.05, 0, 0.07), 
+      urgentTick: () => playTone(1180, 'square', 0.07, 0, 0.09), 
+      correct: () => { 
+        playTone(523.25, 'triangle', 0.15, 0, 0.18); 
+        playTone(659.25, 'triangle', 0.15, 0.09, 0.18); 
+        playTone(783.99, 'triangle', 0.18, 0.18, 0.18); 
+        playTone(1046.5, 'sine', 0.32, 0.27, 0.2); 
+      }, 
+      wrong: () => { 
+        playTone(195, 'sawtooth', 0.22, 0, 0.15); 
+        playTone(145, 'sawtooth', 0.38, 0.18, 0.15); 
+      }, 
+      fanfare: () => { 
+        const chord = [523.25, 659.25, 783.99, 1046.5, 1318.5]; 
+        chord.forEach((n, idx) => playTone(n, 'triangle', 0.32, idx * 0.11, 0.18)); 
+      } 
+    }; 
+ 
+    // ==================== 4. GAME STATE & INITIALIZATION ==================== 
+    let player = { 
+      name: "Cmdr. Maple", 
+      avatarObj: AVATARS[0], 
+      score: 0, 
+      streak: 0, 
+      maxStreak: 0, 
+      correctCount: 0, 
+      fastestTime: null, 
+      altitudeKm: 0, 
+      history: [] 
+    }; 
+ 
+    let boosters = { 
+      fiftyFifty: true, 
+      freeze: true, 
+      doublePts: true 
+    }; 
+ 
+    let activeDouble = false; 
+    let frozenSeconds = 0; 
+    let bots = []; 
+    let currentQ = 0; 
+    let questionTimeLimit = 20; 
+    let timerInterval = null; 
+    let splashInterval = null; 
+    let rivalInterval = null; 
+    let questionStartTime = 0; 
+    let totalPausedMs = 0; 
+    let answered = false; 
+ 
+    function resetBots() { 
+      bots = [ 
+        { name: "Chris H.", avatarObj: AVATARS[1], score: 0, skill: 0.78 }, 
+        { name: "Roberta B.", avatarObj: AVATARS[2], score: 0, skill: 0.82 }, 
+        { name: "Jeremy H.", avatarObj: AVATARS[4], score: 0, skill: 0.72 }, 
+        { name: "Jenni G.", avatarObj: AVATARS[3], score: 0, skill: 0.76 }, 
+        { name: "Joshua K.", avatarObj: AVATARS[5], score: 0, skill: 0.69 } 
+      ]; 
+    } 
+ 
+    // Build Avatar Selector in Lobby 
+    const avatarGrid = document.getElementById('avatar-grid'); 
+    AVATARS.forEach((av, idx) => { 
+      const btn = document.createElement('button'); 
+      btn.type = 'button'; 
+      btn.className = `avatar-opt p-2 rounded-2xl border transition transform ${ 
+        idx === 0 
+          ? 'bg-cyan-500/25 border-cyan-300 scale-105 shadow-[0_0_15px_rgba(34,211,238,0.4)]' 
+          : 'bg-slate-900/70 border-white/10 hover:border-white/30' 
+      }`; 
+      btn.innerHTML = renderHelmetSVG(av, "w-10 h-10 sm:w-11 sm:h-11"); 
+      btn.addEventListener('click', () => { 
+        SFX.click(); 
+        player.avatarObj = av; 
+        document.getElementById('avatar-role-label').textContent = `Role: ${av.role}`; 
+        document.querySelectorAll('.avatar-opt').forEach(b => { 
+          b.className = 'avatar-opt p-2 rounded-2xl border bg-slate-900/70 border-white/10 hover:border-white/30 transition transform'; 
+        }); 
+        btn.className = 'avatar-opt p-2 rounded-2xl border bg-cyan-500/25 border-cyan-300 scale-105 shadow-[0_0_15px_rgba(34,211,238,0.4)] transition transform'; 
+      }); 
+      avatarGrid.appendChild(btn); 
+    }); 
+ 
+    // Screen Switcher 
+    const screens = { 
+      lobby: document.getElementById('screen-lobby'), 
+      splash: document.getElementById('screen-splash'), 
+      question: document.getElementById('screen-question'), 
+      feedback: document.getElementById('screen-feedback'), 
+      podium: document.getElementById('screen-podium') 
+    }; 
+ 
+    function showScreen(name) { 
+      Object.values(screens).forEach(s => { 
+        s.classList.add('hidden'); 
+        s.classList.remove('flex'); 
+      }); 
+      screens[name].classList.remove('hidden'); 
+      if (['question', 'feedback', 'podium'].includes(name)) { 
+        screens[name].classList.add('flex'); 
+      } 
+    } 
+ 
+    // Sound Toggle 
+    document.getElementById('sound-toggle').addEventListener('click', (e) => { 
+      soundEnabled = !soundEnabled; 
+      e.currentTarget.textContent = soundEnabled ? '🔊' : '🔇'; 
+      if (soundEnabled) SFX.click(); 
+    }); 
+ 
+    // Start Mission 
+    document.getElementById('start-btn').addEventListener('click', () => { 
+      SFX.thruster(); 
+      const rawName = document.getElementById('nickname-input').value.trim(); 
+      player.name = rawName || "Cmdr. Maple"; 
+      player.score = 0; 
+      player.streak = 0; 
+      player.maxStreak = 0; 
+      player.correctCount = 0; 
+      player.fastestTime = null; 
+      player.altitudeKm = 0; 
+      player.history = []; 
+ 
+      boosters = { fiftyFifty: true, freeze: true, doublePts: true }; 
+      questionTimeLimit = parseInt(document.getElementById('timer-select').value, 10); 
+      currentQ = 0; 
+      resetBots(); 
+ 
+      document.getElementById('hud-stats').classList.remove('hidden'); 
+      document.getElementById('hud-stats').classList.add('flex'); 
+      document.getElementById('altitude-hud').classList.remove('hidden'); 
+      document.getElementById('altitude-hud').classList.add('flex'); 
+ 
+      updateHUD(); 
+      updateAltitudeHUD(0, "LAUNCHPAD // READY"); 
+      startQuestionSplash(); 
+    }); 
+ 
+    function updateHUD() { 
+      document.getElementById('hud-score').textContent = player.score.toLocaleString(); 
+      document.getElementById('hud-streak').textContent = player.streak; 
+      const badge = document.getElementById('streak-badge'); 
+      if (player.streak >= 3) { 
+        badge.classList.add('border-amber-400', 'bg-amber-500/20', 'shadow-[0_0_15px_rgba(251,191,36,0.4)]'); 
+        document.getElementById('streak-icon').textContent = '☄️'; 
+      } else { 
+        badge.classList.remove('border-amber-400', 'bg-amber-500/20', 'shadow-[0_0_15px_rgba(251,191,36,0.4)]'); 
+        document.getElementById('streak-icon').textContent = '🔥'; 
+      } 
+    } 
+ 
+    function updateAltitudeHUD(km, stageName) { 
+      player.altitudeKm = km; 
+      const pct = Math.min(96, Math.max(4, ((currentQ + 1) / QUESTIONS.length) * 95)); 
+      document.getElementById('altitude-zone').textContent = stageName; 
+      document.getElementById('altitude-km').textContent = `ALT: ${km.toLocaleString()} KM`; 
+      document.getElementById('altitude-fill').style.width = `${pct}%`; 
+      document.getElementById('altitude-rocket').style.left = `calc(${pct}% - 12px)`; 
+    } 
+ 
+    // ==================== 5. WARP COUNTDOWN SPLASH ==================== 
+    function startQuestionSplash() { 
+      const q = QUESTIONS[currentQ]; 
+      targetWarp = 9.5; // Engage hyperspace streaks! 
+ 
+      document.getElementById('splash-qnum').textContent = currentQ + 1; 
+      document.getElementById('splash-stage-name').textContent = q.stage; 
+      document.getElementById('splash-title').textContent = q.question; 
+ 
+      let count = 3; 
+      const countEl = document.getElementById('splash-countdown'); 
+      countEl.textContent = count; 
+      showScreen('splash'); 
+      SFX.tick(); 
+ 
+      clearInterval(splashInterval); 
+      splashInterval = setInterval(() => { 
+        count--; 
+        if (count > 0) { 
+          countEl.textContent = count; 
+          SFX.tick(); 
+        } else { 
+          clearInterval(splashInterval); 
+          launchQuestion(); 
+        } 
+      }, 700); 
+    } 
+ 
+    // ==================== 6. LAUNCH QUESTION & BOOSTERS ==================== 
+    function launchQuestion() { 
+      answered = false; 
+      activeDouble = false; 
+      frozenSeconds = 0; 
+      totalPausedMs = 0; 
+      targetWarp = player.streak >= 3 ? 4.2 : 1.4; 
+ 
+      const q = QUESTIONS[currentQ]; 
+      document.getElementById('q-index').textContent = currentQ + 1; 
+      document.getElementById('q-credit').textContent = q.credit; 
+      document.getElementById('q-text').textContent = q.question; 
+      document.getElementById('double-active-pill').classList.add('hidden'); 
+      document.getElementById('question-card').classList.remove('thruster-active'); 
+ 
+      // Update Booster Buttons Availability 
+      document.getElementById('booster-5050').disabled = !boosters.fiftyFifty; 
+      document.getElementById('booster-freeze').disabled = !boosters.freeze; 
+      document.getElementById('booster-double').disabled = !boosters.doublePts; 
+ 
+      // Render 4 Geometric Kahoot Tiles 
+      const grid = document.getElementById('answers-grid'); 
+      grid.innerHTML = ''; 
+ 
+      q.options.forEach((optText, idx) => { 
+        const style = TILE_STYLES[idx]; 
+        const btn = document.createElement('button'); 
+        btn.dataset.index = idx; 
+        btn.className = `kahoot-btn ${style.bg} text-white rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 text-left min-h-[82px] sm:min-h-[100px]`; 
+        btn.innerHTML = ` 
+          ${style.svg} 
+          <span class="font-extrabold text-sm sm:text-base md:text-lg leading-snug flex-1">${optText}</span> 
+          <span class="hidden sm:inline-flex items-center justify-center w-6 h-6 rounded-lg bg-black/25 font-orbitron text-[11px] font-bold text-white/80">${style.key}</span> 
+        `; 
+        btn.addEventListener('click', (e) => { 
+          const rect = btn.getBoundingClientRect(); 
+          spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, '#38bdf8', 22); 
+          handleAnswer(idx); 
+        }); 
+        grid.appendChild(btn); 
+      }); 
+ 
+      showScreen('question'); 
+      startRivalTicker(); 
+ 
+      // Chronometer Setup 
+      const timerCircle = document.getElementById('timer-circle'); 
+      const timerVal = document.getElementById('timer-value'); 
+      const timerLbl = document.getElementById('timer-label'); 
+      const timeBar = document.getElementById('time-bar'); 
+ 
+      timerVal.textContent = questionTimeLimit; 
+      timerLbl.textContent = 'SEC'; 
+      timerCircle.classList.remove('timer-urgent', 'stasis-active'); 
+      timeBar.style.width = '100%'; 
+ 
+      questionStartTime = performance.now(); 
+      let lastWholeSec = questionTimeLimit; 
+      let lastTickReal = performance.now(); 
+ 
+      clearInterval(timerInterval); 
+      timerInterval = setInterval(() => { 
+        const now = performance.now(); 
+        const dt = now - lastTickReal; 
+        lastTickReal = now; 
+ 
+        if (frozenSeconds > 0) { 
+          frozenSeconds = Math.max(0, frozenSeconds - dt / 1000); 
+          totalPausedMs += dt; 
+          timerLbl.textContent = 'STASIS'; 
+          if (frozenSeconds === 0) { 
+            timerCircle.classList.remove('stasis-active'); 
+            timerLbl.textContent = 'SEC'; 
+          } 
+          return; 
+        } 
+ 
+        const effectiveElapsed = (now - questionStartTime - totalPausedMs) / 1000; 
+        const remaining = Math.max(0, questionTimeLimit - effectiveElapsed); 
+        const wholeSec = Math.ceil(remaining); 
+ 
+        timeBar.style.width = `${(remaining / questionTimeLimit) * 100}%`; 
+ 
+        if (wholeSec !== lastWholeSec && wholeSec > 0) { 
+          lastWholeSec = wholeSec; 
+          timerVal.textContent = wholeSec; 
+          if (wholeSec <= 5) { 
+            timerCircle.classList.add('timer-urgent'); 
+            SFX.urgentTick(); 
+          } else { 
+            SFX.tick(); 
+          } 
+        } 
+ 
+        if (remaining <= 0) { 
+          clearInterval(timerInterval); 
+          handleAnswer(-1); 
+        } 
+      }, 50); 
+    } 
+ 
+    // Live Rival Comms Ticker 
+    function startRivalTicker() { 
+      const ticker = document.getElementById('rival-ticker'); 
+      ticker.innerHTML = `<span class="font-orbitron text-[10px] text-cyan-400 font-bold uppercase shrink-0">LIVE COMMS:</span>`; 
+ 
+      const shuffled = [...bots].sort(() => Math.random() - 0.5); 
+      let idx = 0; 
+ 
+      clearInterval(rivalInterval); 
+      rivalInterval = setInterval(() => { 
+        if (answered || idx >= shuffled.length) { 
+          clearInterval(rivalInterval); 
+          return; 
+        } 
+        const bot = shuffled[idx++]; 
+        const pill = document.createElement('span'); 
+        pill.className = 'inline-flex items-center gap-1 bg-white/10 border border-cyan-400/25 text-cyan-100 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 animate-pop'; 
+        pill.textContent = `✓ ${bot.name} locked in`; 
+        ticker.appendChild(pill); 
+      }, 1600 + Math.random() * 900); 
+    } 
+ 
+    // Booster 1: 50/50 Radar Scan 
+    document.getElementById('booster-5050').addEventListener('click', () => { 
+      if (!boosters.fiftyFifty || answered) return; 
+      boosters.fiftyFifty = false; 
+      document.getElementById('booster-5050').disabled = true; 
+      SFX.radar(); 
+ 
+      const q = QUESTIONS[currentQ]; 
+      const wrongIndices = [0, 1, 2, 3].filter(i => i !== q.correctIndex).sort(() => Math.random() - 0.5).slice(0, 2); 
+      const buttons = document.querySelectorAll('#answers-grid button'); 
+      wrongIndices.forEach(idx => { 
+        buttons[idx].classList.add('eliminated-tile'); 
+        buttons[idx].disabled = true; 
+      }); 
+    }); 
+ 
+    // Booster 2: Time Dilation (5s Freeze) 
+    document.getElementById('booster-freeze').addEventListener('click', () => { 
+      if (!boosters.freeze || answered) return; 
+      boosters.freeze = false; 
+      document.getElementById('booster-freeze').disabled = true; 
+      frozenSeconds = 5; 
+      SFX.freeze(); 
+ 
+      const timerCircle = document.getElementById('timer-circle'); 
+      timerCircle.classList.remove('timer-urgent'); 
+      timerCircle.classList.add('stasis-active'); 
+    }); 
+ 
+    // Booster 3: 2x Thruster Boost 
+    document.getElementById('booster-double').addEventListener('click', () => { 
+      if (!boosters.doublePts || answered) return; 
+      boosters.doublePts = false; 
+      activeDouble = true; 
+      document.getElementById('booster-double').disabled = true; 
+      SFX.thruster(); 
+ 
+      document.getElementById('double-active-pill').classList.remove('hidden'); 
+      document.getElementById('question-card').classList.add('thruster-active'); 
+    }); 
+ 
+    // Keyboard Support (1-4 or A-D) 
+    window.addEventListener('keydown', (e) => { 
+      if (screens.question.classList.contains('hidden') || answered) return; 
+      const map = { '1': 0, 'a': 0, 'A': 0, '2': 1, 'b': 1, 'B': 1, '3': 2, 'c': 2, 'C': 2, '4': 3, 'd': 3, 'D': 3 }; 
+      if (e.key in map) { 
+        const idx = map[e.key]; 
+        const btn = document.querySelector(`#answers-grid button[data-index="${idx}"]`); 
+        if (btn && !btn.disabled) btn.click(); 
+      } 
+    }); 
+ 
+    // ==================== 7. ANSWER EVALUATION & SCORING ==================== 
+    function handleAnswer(selectedIndex) { 
+      if (answered) return; 
+      answered = true; 
+      clearInterval(timerInterval); 
+      clearInterval(rivalInterval); 
+      targetWarp = 1.2; 
+ 
+      const q = QUESTIONS[currentQ]; 
+      const effectiveElapsed = Math.max(0.1, Math.min(questionTimeLimit, (performance.now() - questionStartTime - totalPausedMs) / 1000)); 
+      const isCorrect = selectedIndex === q.correctIndex; 
+ 
+      // Reveal tiles 
+      const buttons = document.querySelectorAll('#answers-grid button'); 
+      buttons.forEach((btn, idx) => { 
+        btn.disabled = true; 
+        if (idx === q.correctIndex) { 
+          btn.classList.add('ring-4', 'ring-cyan-300', 'scale-[1.02]'); 
+        } else if (!btn.classList.contains('eliminated-tile')) { 
+          btn.style.opacity = '0.32'; 
+        } 
+      }); 
+ 
+      let earnedPoints = 0; 
+      if (isCorrect) { 
+        SFX.correct(); 
+        spawnBurst(width * 0.5, height * 0.45, '#34d399', 45); 
+        spawnBurst(width * 0.5, height * 0.45, '#fbbf24', 30); 
+ 
+        const speedRatio = Math.max(0, 1 - (effectiveElapsed / questionTimeLimit) * 0.5); 
+        const streakBonus = Math.min(player.streak * 100, 300); 
+        const basePts = Math.round(1000 * speedRatio) + streakBonus; 
+        earnedPoints = activeDouble ? basePts * 2 : basePts; 
+ 
+        player.score += earnedPoints; 
+        player.streak += 1; 
+        player.maxStreak = Math.max(player.maxStreak, player.streak); 
+        player.correctCount += 1; 
+ 
+        if (player.fastestTime === null || effectiveElapsed < player.fastestTime) { 
+          player.fastestTime = effectiveElapsed; 
+        } 
+ 
+        if (player.streak >= 3) { 
+          document.getElementById('app-main').classList.add('shake-impact'); 
+          setTimeout(() => document.getElementById('app-main').classList.remove('shake-impact'), 400); 
+        } 
+      } else { 
+        SFX.wrong(); 
+        player.streak = 0; 
+        document.getElementById('app-main').classList.add('shake-impact'); 
+        setTimeout(() => document.getElementById('app-main').classList.remove('shake-impact'), 400); 
+      } 
+ 
+      player.history.push({ 
+        question: q.question, 
+        userAnswer: selectedIndex >= 0 ? q.options[selectedIndex] : "Time Expired", 
+        correctAnswer: q.options[q.correctIndex], 
+        isCorrect 
+      }); 
+ 
+      // Simulate AI Bots 
+      bots.forEach(bot => { 
+        if (Math.random() < bot.skill) { 
+          const botSpeed = 0.55 + Math.random() * 0.42; 
+          bot.score += Math.round(1000 * botSpeed); 
+        } 
+      }); 
+ 
+      updateHUD(); 
+      updateAltitudeHUD(q.altitudeKm, q.stage); 
+ 
+      setTimeout(() => { 
+        showFeedbackScreen(isCorrect, selectedIndex === -1, earnedPoints, q); 
+      }, 950); 
+    } 
+ 
+    // ==================== 8. STAGE DEBRIEF & LEADERBOARD ==================== 
+    function getSortedStandings() { 
+      const all = [ 
+        { name: player.name, avatarObj: player.avatarObj, score: player.score, isPlayer: true }, 
+        ...bots.map(b => ({ name: b.name, avatarObj: b.avatarObj, score: b.score, isPlayer: false })) 
+      ]; 
+      return all.sort((a, b) => b.score - a.score); 
+    } 
+ 
+    function getStreakCallout(streak) { 
+      if (streak >= 7) return "SUPERNOVA STREAK // UNSTOPPABLE"; 
+      if (streak >= 5) return "ESCAPE VELOCITY // 5+ COMBO"; 
+      if (streak >= 3) return "AFTERBURNER IGNITED // ORBITAL STREAK"; 
+      if (streak === 2) return "THRUSTERS NOMINAL // 2X STREAK"; 
+      return "TELEMETRY CONFIRMED"; 
+    } 
+ 
+    function showFeedbackScreen(isCorrect, timedOut, earnedPoints, q) { 
+      const banner = document.getElementById('result-banner'); 
+      const callout = document.getElementById('result-callout'); 
+      const icon = document.getElementById('result-icon'); 
+      const title = document.getElementById('result-title'); 
+      const pts = document.getElementById('result-points'); 
+      const rationale = document.getElementById('result-rationale'); 
+ 
+      document.getElementById('feedback-altitude-tag').textContent = `ALT: ${q.altitudeKm.toLocaleString()} KM`; 
+ 
+      if (isCorrect) { 
+        banner.className = "w-full rounded-3xl p-5 sm:p-6 text-center shadow-2xl border border-emerald-300/40 bg-gradient-to-br from-emerald-600/90 via-teal-700/90 to-cyan-900/90 backdrop-blur-md"; 
+        callout.textContent = getStreakCallout(player.streak); 
+        icon.textContent = player.streak >= 3 ? "☄️" : "🚀"; 
+        title.textContent = activeDouble ? "2X THRUSTER HIT!" : "STAGE CLEARED!"; 
+        pts.textContent = `+${earnedPoints.toLocaleString()} PTS${activeDouble ? ' (2X BOOST)' : ''}`; 
+      } else { 
+        banner.className = "w-full rounded-3xl p-5 sm:p-6 text-center shadow-2xl border border-rose-400/40 bg-gradient-to-br from-rose-700/90 via-red-800/90 to-slate-900/90 backdrop-blur-md"; 
+        callout.textContent = timedOut ? "CHRONOMETER DEPLETED" : "COURSE CORRECTION REQUIRED"; 
+        icon.textContent = timedOut ? "⏰" : "🛰️"; 
+        title.textContent = timedOut ? "Time's Up!" : "Off Trajectory!"; 
+        pts.textContent = `Correct: ${q.options[q.correctIndex]}`; 
+      } 
+ 
+      rationale.textContent = q.explanation; 
+ 
+      // Render Squadron Standings with Relative Progress Bars 
+      const standings = getSortedStandings(); 
+      const topScore = Math.max(1000, standings[0].score); 
+      const lbList = document.getElementById('leaderboard-list'); 
+      lbList.innerHTML = ''; 
+ 
+      standings.forEach((entry, idx) => { 
+        const barPct = Math.max(8, Math.round((entry.score / topScore) * 100)); 
+        const row = document.createElement('div'); 
+        row.className = `relative overflow-hidden flex items-center justify-between px-3.5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm border ${ 
+          entry.isPlayer 
+            ? 'bg-cyan-500/20 border-cyan-300 text-white shadow-[0_0_15px_rgba(34,211,238,0.25)]' 
+            : 'bg-white/5 border-white/10 text-slate-200' 
+        }`; 
+        row.innerHTML = ` 
+          <div class="absolute inset-y-0 left-0 ${entry.isPlayer ? 'bg-cyan-400/20' : 'bg-white/5'} transition-all duration-700" style="width: ${barPct}%;"></div> 
+          <div class="relative z-10 flex items-center gap-2.5"> 
+            <span class="font-orbitron w-6 text-center ${idx === 0 ? 'text-amber-300' : 'text-slate-400'}">#${idx + 1}</span> 
+            ${renderHelmetSVG(entry.avatarObj, "w-7 h-7")} 
+            <span>${entry.name} ${entry.isPlayer ? '<span class="text-cyan-300">(YOU)</span>' : ''}</span> 
+          </div> 
+          <span class="relative z-10 font-orbitron ${entry.isPlayer ? 'text-amber-300' : 'text-slate-300'}">${entry.score.toLocaleString()}</span> 
+        `; 
+        lbList.appendChild(row); 
+      }); 
+ 
+      const nextBtn = document.getElementById('next-btn'); 
+      nextBtn.textContent = currentQ < QUESTIONS.length - 1 ? "NEXT STAGE ➔" : "ENTER ORBITAL PODIUM 🏆"; 
+ 
+      showScreen('feedback'); 
+    } 
+ 
+    document.getElementById('next-btn').addEventListener('click', () => { 
+      SFX.click(); 
+      currentQ++; 
+      if (currentQ < QUESTIONS.length) { 
+        startQuestionSplash(); 
+      } else { 
+        showPodium(); 
+      } 
+    }); 
+ 
+    // ==================== 9. FINAL ORBITAL PODIUM & DEBRIEF ==================== 
+    function showPodium() { 
+      SFX.fanfare(); 
+      targetWarp = 2.8; 
+ 
+      // Celebration Particle Fireworks 
+      const colors = ['#22d3ee', '#fbbf24', '#a855f7', '#34d399', '#f43f5e']; 
+      for (let b = 0; b < 6; b++) { 
+        setTimeout(() => { 
+          spawnBurst( 
+            width * (0.2 + Math.random() * 0.6), 
+            height * (0.2 + Math.random() * 0.4), 
+            colors[b % colors.length], 
+            38 
+          ); 
+        }, b * 320); 
+      } 
+ 
+      const standings = getSortedStandings(); 
+      const playerRank = standings.findIndex(s => s.isPlayer) + 1; 
+ 
+      // Official CSA Rank Rating 
+      let csaRank = "CSA FLIGHT CANDIDATE"; 
+      if (player.correctCount >= 9) csaRank = "CSA CHIEF ASTRONAUT COMMANDER"; 
+      else if (player.correctCount >= 7) csaRank = "ISS MISSION SPECIALIST"; 
+      else if (player.correctCount >= 5) csaRank = "ORBITAL PAYLOAD ENGINEER"; 
+ 
+      document.getElementById('final-rank-badge').textContent = 
+        `RANK #${playerRank} • ${csaRank}`; 
+ 
+      // Debrief Stats 
+      document.getElementById('stat-accuracy').textContent = `${player.correctCount * 10}%`; 
+      document.getElementById('stat-streak').textContent = `${player.maxStreak} 🔥`; 
+      document.getElementById('stat-speed').textContent = player.fastestTime ? `${player.fastestTime.toFixed(1)}s` : '--'; 
+      document.getElementById('stat-altitude').textContent = `${player.altitudeKm.toLocaleString()} km`; 
+ 
+      // Top 3 Podium 
+      [1, 2, 3].forEach(rank => { 
+        const entry = standings[rank - 1]; 
+        document.getElementById(`podium-${rank}-avatar`).innerHTML = renderHelmetSVG(entry.avatarObj, rank === 1 ? "w-14 h-14" : "w-11 h-11"); 
+        document.getElementById(`podium-${rank}-name`).textContent = entry.isPlayer ? `${entry.name} (YOU)` : entry.name; 
+        document.getElementById(`podium-${rank}-score`).textContent = `${entry.score.toLocaleString()} PTS`; 
+      }); 
+ 
+      // Full Standings 
+      const finalLb = document.getElementById('final-leaderboard'); 
+      finalLb.innerHTML = ''; 
+      standings.forEach((entry, idx) => { 
+        const row = document.createElement('div'); 
+        row.className = `flex items-center justify-between px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm border ${ 
+          entry.isPlayer ? 'bg-cyan-500/20 border-cyan-300 text-white' : 'bg-white/5 border-white/10 text-slate-200' 
+        }`; 
+        row.innerHTML = ` 
+          <div class="flex items-center gap-3"> 
+            <span class="font-orbitron w-6 text-center text-cyan-300">#${idx + 1}</span> 
+            ${renderHelmetSVG(entry.avatarObj, "w-7 h-7")} 
+            <span>${entry.name} ${entry.isPlayer ? '(YOU)' : ''}</span> 
+          </div> 
+          <span class="font-orbitron text-amber-300">${entry.score.toLocaleString()} PTS</span> 
+        `; 
+        finalLb.appendChild(row); 
+      }); 
+ 
+      // Mission Log Answer Key 
+      const reviewContainer = document.getElementById('review-container'); 
+      reviewContainer.innerHTML = ''; 
+      player.history.forEach((item, idx) => { 
+        const card = document.createElement('div'); 
+        card.className = `p-3.5 rounded-2xl border-l-4 ${ 
+          item.isCorrect ? 'bg-emerald-950/50 border-emerald-400' : 'bg-rose-950/50 border-rose-500' 
+        }`; 
+        card.innerHTML = ` 
+          <div class="font-orbitron font-bold text-[11px] text-cyan-300 mb-1">STAGE ${idx + 1}: ${item.question}</div> 
+          <div class="text-xs font-bold ${item.isCorrect ? 'text-emerald-300' : 'text-rose-300'}"> 
+            Your Telemetry: ${item.userAnswer} ${item.isCorrect ? '✅' : '❌'} 
+          </div> 
+          ${!item.isCorrect ? `<div class="text-xs font-extrabold text-white mt-1">CSA Requirement: ${item.correctAnswer}</div>` : ''} 
+        `; 
+        reviewContainer.appendChild(card); 
+      }); 
+ 
+      showScreen('podium'); 
+    } 
+ 
+    document.getElementById('toggle-review-btn').addEventListener('click', (e) => { 
+      SFX.click(); 
+      const box = document.getElementById('review-container'); 
+      const isHidden = box.classList.contains('hidden'); 
+      box.classList.toggle('hidden'); 
+      box.classList.toggle('flex'); 
+      e.currentTarget.textContent = isHidden ? 'Hide Mission Log' : 'Inspect Mission Log'; 
+    }); 
+ 
+    document.getElementById('play-again-btn').addEventListener('click', () => { 
+      SFX.click(); 
+      targetWarp = 1; 
+      document.getElementById('hud-stats').classList.add('hidden'); 
+      document.getElementById('hud-stats').classList.remove('flex'); 
+      document.getElementById('altitude-hud').classList.add('hidden'); 
+      document.getElementById('altitude-hud').classList.remove('flex'); 
+      showScreen('lobby'); 
+    }); 
+  </script> 
+</body> 
+</html> 
+ 
