@@ -3,6 +3,7 @@ const PLAYING=['play','quiz','puzzle','dnd','code'];
 function onKey(k){
  if(scene=='guide'){if(k=='enter'||k==' ')scene='menu';else if(k=='escape')scene='menu';return}
  if(scene=='menu'){
+  if(campaignData()&&campaignData().stage===2){startLevel(0);return;}
   if(k=='escape'){window.location.assign('../../index.html');return}
   if(k.length==1&&'123'.includes(k))startLevel(+k-1);
   return;
