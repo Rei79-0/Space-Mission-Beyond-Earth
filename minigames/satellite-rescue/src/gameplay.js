@@ -12,8 +12,26 @@ function answer(i){const o=opts[i];if(!o||o.dis)return;att++;
  else{o.dis=true;qmsg='WRONG ANSWER - TRY AGAIN'}}
 function finish(){const L=LV[lv],T=t+pen,tf=T<=L.par?1:Math.max(0,1-(T-L.par)/(L.par*1.5)),acc=L.n/att,pts=Math.round(60*tf+40*acc);
  res[lv]={T,att,hits,pts,tier:pts>=90?3:pts>=70?2:pts>=45?1:0};scene='result'}
-function next(){scene='menu'}
-function fire(){if(fcd>0)return;const an=Math.atan2(mouse[1]+cam.y-P.y,mouse[0]+cam.x-P.x);bolts.push({x:P.x+Math.cos(an)*12,y:P.y+Math.sin(an)*12,vx:P.vx+Math.cos(an)*6,vy:P.vy+Math.sin(an)*6,l:1.1});P.vx-=Math.cos(an)*.5;P.vy-=Math.sin(an)*.5;fcd=.35}
+function next(){
+ const campaign=campaignData();
+ if(campaign&&campaign.stage===2){
+   try{
+     const result={objective:campaign.objective,flightScore:campaign.flightScore||0,rescueScore:res[lv]?.pts||0,completedAt:Date.now()};
+     localStorage.setItem('beyondEarthCampaignResult',JSON.stringify(result));
+     const profile=JSON.parse(localStorage.getItem('beyondEarthProfile')||'{}');
+     profile.credits=Number(profile.credits??300)+100;
+     profile.missionHistory=Array.isArray(profile.missionHistory)?profile.missionHistory:[];
+     profile.missionHistory.unshift({objective:campaign.objective,outcome:'Two-stage mission completed',score:result.flightScore+result.rescueScore,creditsEarned:100});
+     profile.missionHistory=profile.missionHistory.slice(0,20);
+     localStorage.setItem('beyondEarthProfile',JSON.stringify(profile));
+     localStorage.removeItem('beyondEarthCampaign');
+   }catch(_){}
+   window.location.assign('../../index.html?missionComplete=1');
+   return;
+ }
+ scene='menu';
+}
+function fire(){if(fcd>0)return;const an=Math.atan2(mouse[1]+cam.y-P.y,mouse[0]+cam.x-P.x);bolts.push({x:P.x+Math.cos(an)*12,y:P.y+Math.sin(an)*12,vx:P.vx+Math.cos(an)*6,vy:P.vy+Math.sin(an)*6,l:1.1+(upgradeStats.range||0)*.55});P.vx-=Math.cos(an)*.5;P.vy-=Math.sin(an)*.5;fcd=.35}
 function collide(a,b,e){const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),R=a.r+b.r;if(d>=R||!d)return false;const nx=dx/d,ny=dy/d,ia=1/a.m,ib=1/b.m,ov=R-d;a.x-=nx*ov*ia/(ia+ib);a.y-=ny*ov*ia/(ia+ib);b.x+=nx*ov*ib/(ia+ib);b.y+=ny*ov*ib/(ia+ib);const vn=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(vn<0){const j=-(1+e)*vn/(ia+ib);a.vx-=j*nx*ia;a.vy-=j*ny*ia;b.vx+=j*nx*ib;b.vy+=j*ny*ib}return true}
 function openPuzzle(){ends=LV[lv].pz;paths=ends.map(()=>[]);drag=-1;solved=false;scene='puzzle'}
 const same=(a,r,c)=>a[0]==r&&a[1]==c,isEnd=(k,r,c)=>(ends[k][0]==r&&ends[k][1]==c)||(ends[k][2]==r&&ends[k][3]==c);
@@ -45,9 +63,9 @@ function update(dt){tk+=dt;for(const d of DR){d.x+=d.vx;d.y+=d.vy;d.a+=d.vr;if(d
  const all=[P,...ast,...aliens];if(phase=='push'&&!SAT.docked)satUpdate();
  for(const a of ast){const s=Math.hypot(a.vx,a.vy);if(s>2.5){a.vx*=2.5/s;a.vy*=2.5/s}}
  for(const b of all){b.x+=b.vx;b.y+=b.vy;if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)*.7}if(b.x>WW-b.r){b.x=WW-b.r;b.vx=-Math.abs(b.vx)*.7}if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)*.7}if(b.y>WH-b.r){b.y=WH-b.r;b.vy=-Math.abs(b.vy)*.7}}
- for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){const a=all[i],b=all[j];if(collide(a,b,.8)&&hit<=0){const o=a==P?b:b==P?a:null;if(o&&o!=SAT&&!(o.st>0)){pen+=o.m>2?3:4;hits++;hit=1.2;msg=o.m>2?'HULL HIT! +3 SEC':'ALIEN ATTACK! +4 SEC';msgT=1.5;if(o.m<2&&mounted){mounted=false;mlock=true;msg='DISMOUNTED! HOLD RIGHT CLICK TO REMOUNT';msgT=2.5}}}}
+ for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){const a=all[i],b=all[j];if(collide(a,b,.8)&&hit<=0){const o=a==P?b:b==P?a:null;if(o&&o!=SAT&&!(o.st>0)){hits++;hit=1.2;if(shieldCharges>0){shieldCharges--;msg='SHIELD ABSORBED HIT! '+shieldCharges+' LEFT';msgT=1.5;}else{pen+=o.m>2?3:4;msg=o.m>2?'HULL HIT! +3 SEC':'ALIEN ATTACK! +4 SEC';msgT=1.5;}if(o.m<2&&mounted){mounted=false;mlock=true;msg='DISMOUNTED! HOLD RIGHT CLICK TO REMOUNT';msgT=2.5}}}}
  for(const b of bolts){b.x+=b.vx;b.y+=b.vy;b.l-=dt;
-  for(const a of aliens)if(b.l>0&&Math.hypot(a.x-b.x,a.y-b.y)<a.r+3){b.l=0;a.st=6;a.vx+=b.vx*.3;a.vy+=b.vy*.3;for(let i=0;i<8;i++)parts.push({x:a.x,y:a.y,vx:rnd(-2,2),vy:rnd(-2,2),l:.5,c:'#7fe8ff'})}
+  for(const a of aliens)if(b.l>0&&Math.hypot(a.x-b.x,a.y-b.y)<a.r+3){b.l=0;a.st=6+(upgradeStats.stun||0)*3;a.vx+=b.vx*.3;a.vy+=b.vy*.3;for(let i=0;i<8;i++)parts.push({x:a.x,y:a.y,vx:rnd(-2,2),vy:rnd(-2,2),l:.5,c:'#7fe8ff'})}
   for(const c of CH)if(!c.open)for(const q of c.py)if(b.l>0&&Math.hypot(q.x-b.x,q.y-b.y)<9){b.l=0;pylonHit(c,q);for(let i=0;i<6;i++)parts.push({x:q.x,y:q.y,vx:rnd(-1.5,1.5),vy:rnd(-1.5,1.5),l:.4,c:'#ffd23f'})}
   for(const a of ast)if(b.l>0&&Math.hypot(a.x-b.x,a.y-b.y)<a.r+3){b.l=0;a.vx+=b.vx*.05;a.vy+=b.vy*.05}}
  bolts=bolts.filter(b=>b.l>0);for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.l-=dt}parts=parts.filter(p=>p.l>0);
