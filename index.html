@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Mission: Beyond Earth</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap');
+:root{--ink:#f4f0ff;--muted:#b8b2d8;--purple:#9c7bff;--cyan:#78e7f2;--pink:#ff9fc9;--panel:#171832;--panel2:#222448;--line:#55517d;--gold:#ffe49a}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;color:var(--ink);font-family:Nunito, sans-serif;background:#090d22;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-3;background:radial-gradient(ellipse at 50% 100%,#29336b 0%,#111735 44%,#080b1c 100%)}
+#stars{position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(2px 2px at 20px 30px,#fff 45%,transparent 55%),radial-gradient(1px 1px at 80px 110px,#a9eaff 45%,transparent 55%),radial-gradient(2px 2px at 160px 70px,#fff 45%,transparent 55%),radial-gradient(1px 1px at 220px 180px,#d7baff 45%,transparent 55%);background-size:260px 220px;opacity:.7;animation:twinkle 5s ease-in-out infinite alternate}
+@keyframes twinkle{to{opacity:.35;transform:translateY(8px)}}
+.planet{position:fixed;z-index:-1;border-radius:50%;pointer-events:none}.planet.one{width:170px;height:170px;right:7%;top:13%;background:linear-gradient(135deg,#d9a5ff,#7457bb 65%,#443a83);box-shadow:inset -22px -15px 0 #42346f,0 0 45px #a878ff44}.planet.two{width:65px;height:65px;left:8%;top:36%;background:linear-gradient(140deg,#a5f5ec,#3e8d9e);box-shadow:inset -10px -7px 0 #28647b}
+header{max-width:1180px;margin:auto;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:12px}.brand-icon{width:45px;height:45px;display:grid;place-items:center;background:#28264f;border:3px solid #a58cff;box-shadow:4px 4px 0 #080b1c;font-size:24px}.brand-name{font-family:'Press Start 2P';font-size:10px;line-height:1.8;color:#fff}.brand-name span{color:var(--cyan)}
+.status{font-size:12px;font-weight:900;letter-spacing:1.5px;color:var(--cyan);border:1px solid #557b9b;padding:9px 12px;background:#121a36bb}
+main{max-width:1180px;margin:10px auto 60px;padding:0 28px}
+.hero{text-align:center;padding:30px 10px 24px}.eyebrow{color:var(--cyan);font-weight:900;letter-spacing:4px;font-size:12px}.hero h1{font-family:'Press Start 2P';font-size:clamp(24px,4vw,46px);line-height:1.55;margin:18px auto 12px;text-shadow:4px 4px 0 #51418e,7px 7px 0 #090d22;max-width:900px}.hero h1 span{color:var(--gold)}.hero p{max-width:670px;margin:0 auto;color:#c7c5df;line-height:1.7;font-size:16px}
+.pixel-rule{height:8px;max-width:650px;margin:25px auto;background:repeating-linear-gradient(90deg,#9d80ff 0 18px,transparent 18px 23px,#70dce9 23px 35px,transparent 35px 40px);opacity:.8}
+.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:stretch}.panel{background:linear-gradient(145deg,#202144ed,#14172fee);border:2px solid var(--line);box-shadow:8px 8px 0 #070a1b;padding:25px;position:relative}.panel:before{content:"";position:absolute;left:8px;top:8px;width:9px;height:9px;background:var(--cyan);box-shadow:calc(100% + 450px) 0 #ff9fc9}
+.panel-title{font-family:'Press Start 2P';font-size:13px;line-height:1.7;color:var(--gold);margin:0 0 8px}.panel-sub{color:var(--muted);font-size:13px;margin:0 0 22px}
+label{display:block;font-size:12px;font-weight:900;letter-spacing:1.3px;color:#d9d5f4;margin:16px 0 8px}
+input{width:100%;background:#0d1128;color:white;border:2px solid #55517d;padding:14px 15px;font:700 15px Nunito;outline:none}input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #78e7f222}input::placeholder{color:#777695}
+.gender{display:grid;grid-template-columns:1fr 1fr;gap:12px}.gender-option{cursor:pointer;border:2px solid #55517d;background:#171a38;padding:13px 10px;text-align:center;transition:.15s}.gender-option input{display:none}.gender-option .avatar{font-size:36px;display:block;margin-bottom:7px;filter:drop-shadow(2px 3px 0 #080b1c)}.gender-option strong{font-size:13px}.gender-option.selected{border-color:var(--cyan);background:#243451;box-shadow:inset 0 0 0 2px #78e7f233}
+.primary,.secondary{width:100%;border:0;padding:15px 18px;font-family:'Press Start 2P';font-size:11px;line-height:1.7;cursor:pointer;transition:transform .12s,filter .12s}.primary{margin-top:20px;background:var(--gold);color:#29203d;box-shadow:0 5px 0 #a77c49}.primary:hover,.secondary:hover{filter:brightness(1.12);transform:translateY(-2px)}.primary:active,.secondary:active{transform:translateY(3px);box-shadow:none}.secondary{background:#37345f;color:#fff;border:2px solid #7770aa;box-shadow:0 4px 0 #0a0c20}
+.message{min-height:20px;color:var(--pink);font-size:12px;font-weight:800;margin-top:10px}.tiny{font-size:11px;color:#9895b9;line-height:1.6;margin-top:12px}
+.preview{display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}.preview-top{position:relative;z-index:1}.scene{height:205px;margin:10px -5px 18px;position:relative;overflow:hidden;background:linear-gradient(#151d45 0%,#34366c 72%,#4e477d 73%,#272849 100%);border:2px solid #55517d;image-rendering:pixelated}
+.moon{position:absolute;right:16%;top:24px;width:57px;height:57px;border-radius:50%;background:#d8d3ff;box-shadow:inset -10px -7px #9d9acb,0 0 22px #c5bdff88}.hill{position:absolute;bottom:-26px;width:125%;height:100px;left:-12%;background:#20274e;clip-path:polygon(0 45%,15% 10%,29% 48%,45% 0,60% 42%,76% 14%,100% 52%,100% 100%,0 100%)}.hill.back{bottom:-10px;background:#38416b;clip-path:polygon(0 60%,20% 25%,35% 55%,55% 12%,73% 49%,90% 20%,100% 43%,100% 100%,0 100%)}.ground{position:absolute;bottom:0;height:24px;width:100%;background:repeating-linear-gradient(90deg,#6c5882 0 22px,#55456e 22px 44px);border-top:5px solid #a38a9c}
+.astronaut{position:absolute;z-index:2;bottom:19px;left:42%;font-size:58px;filter:drop-shadow(4px 4px 0 #171832);animation:bob 2.2s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-7px)}}
+.crater{position:absolute;bottom:27px;width:48px;height:12px;border-radius:50%;background:#242342}.crater.c1{left:10%}.crater.c2{right:12%;width:30px}
+.feature-list{display:grid;gap:12px;margin-top:12px}.feature{display:flex;gap:12px;align-items:center;color:#d8d5ed;font-size:13px}.feature-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;background:#30305b;border:1px solid #68639c;font-size:17px}
+.dashboard{display:none;margin-top:24px}.dashboard.show{display:block}.welcome{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.player-chip{display:flex;align-items:center;gap:10px;background:#11152d;border:1px solid #57527f;padding:9px 13px;font-weight:900}.player-chip span:first-child{font-size:25px}.missions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:18px}.mission{background:#1b1e3d;border:2px solid #55517d;padding:17px;min-height:160px;display:flex;flex-direction:column}.mission .m-icon{font-size:29px}.mission h3{font-family:'Press Start 2P';font-size:10px;line-height:1.8;color:var(--gold);margin:12px 0 7px}.mission p{font-size:12px;color:#bdbbd7;line-height:1.5;margin:0 0 14px;flex:1}.mission button{background:#3d3970;color:white;border:1px solid #8078b6;padding:10px;font-weight:900;cursor:pointer}.mission button:hover{background:#514a91}
+.dashboard-note{font-size:11px;color:#a7a4c5;margin-top:12px}.footer{text-align:center;color:#8583a9;font-size:11px;margin:34px 0 0}.footer b{color:#c7c1ee}
+@media(max-width:760px){header{padding:18px 18px}.status{display:none}main{padding:0 18px}.layout{grid-template-columns:1fr}.hero{padding-top:20px}.hero p{font-size:14px}.missions{grid-template-columns:1fr}.panel{padding:21px}.planet.one{right:-55px;top:18%}.planet.two{left:-25px}}
+</style>
+</head>
+<body>
+<div id="stars"></div><div class="planet one"></div><div class="planet two"></div>
+<header><div class="brand"><div class="brand-icon">🚀</div><div class="brand-name">SPACE MISSION<br><span>BEYOND EARTH</span></div></div><div class="status">✦ ASTRONAUT TRAINING PROGRAM</div></header>
+<main>
+<section class="hero">
+<div class="eyebrow">YOUR JOURNEY STARTS HERE</div>
+<h1>READY FOR <span>LIFTOFF?</span></h1>
+<p>Train like an astronaut, explore the unknown, and prove you have what it takes to go beyond Earth. Your mission begins with one small step.</p>
+<div class="pixel-rule"></div>
+</section>
+<section class="layout" id="entry">
+<div class="panel">
+<h2 class="panel-title">CREATE YOUR ASTRONAUT</h2>
+<p class="panel-sub">Set up your explorer profile to enter the training programme.</p>
+<form id="profileForm">
+<label for="playerName">ASTRONAUT NAME</label>
+<input id="playerName" maxlength="18" placeholder="Enter your name..." autocomplete="nickname" required>
+<label>CHOOSE YOUR ASTRONAUT</label>
+<div class="gender">
+<label class="gender-option selected" data-gender="boy"><input type="radio" name="gender" value="boy" checked><span class="avatar">👨🏻‍🚀</span><strong>BOY ASTRONAUT</strong></label>
+<label class="gender-option" data-gender="girl"><input type="radio" name="gender" value="girl"><span class="avatar">👩🏻‍🚀</span><strong>GIRL ASTRONAUT</strong></label>
+</div>
+<button class="primary" type="submit">▶ START YOUR MISSION</button>
+<div class="message" id="formMessage" aria-live="polite"></div>
+</form>
+<p class="tiny">Your profile is saved in this browser for this demo. A production version can connect this form to your SQLite database for account registration and progress tracking.</p>
+</div>
+<div class="panel preview">
+<div class="preview-top"><h2 class="panel-title">THE UNIVERSE AWAITS</h2><p class="panel-sub">A little training. A giant leap for you.</p>
+<div class="scene"><div class="moon"></div><div class="hill back"></div><div class="hill"></div><div class="crater c1"></div><div class="crater c2"></div><div class="astronaut" id="previewAstronaut">👨🏻‍🚀</div><div class="ground"></div></div>
+<div class="feature-list">
+<div class="feature"><span class="feature-icon">🪐</span><span><b>Explore space</b><br>Discover the wonders beyond Earth.</span></div>
+<div class="feature"><span class="feature-icon">🧑‍🚀</span><span><b>Complete astronaut training</b><br>Build your skills mission by mission.</span></div>
+<div class="feature"><span class="feature-icon">🏆</span><span><b>Earn your certification</b><br>Prove you're ready for the stars.</span></div>
+</div></div>
+</div>
+</section>
+<section class="dashboard" id="dashboard">
+<div class="panel">
+<div class="welcome"><div><h2 class="panel-title">WELCOME TO THE CREW, <span id="welcomeName"></span>!</h2><p class="panel-sub">Your astronaut training hub is ready. Choose a mission below.</p></div><div class="player-chip"><span id="playerAvatar">👨🏻‍🚀</span><span id="playerLabel"></span></div></div>
+<div class="missions">
+<article class="mission"><div class="m-icon">🛰️</div><h3>MISSION 01</h3><p>Enter your first training challenge and test your astronaut skills.</p><button onclick="openMission('minigame1.html')">PLAY MINIGAME 1 ↗</button></article>
+<article class="mission"><div class="m-icon">🔧</div><h3>MISSION 02</h3><p>Take on another hands-on challenge in your journey through space.</p><button onclick="openMission('minigame2.html')">PLAY MINIGAME 2 ↗</button></article>
+<article class="mission"><div class="m-icon">📡</div><h3>KNOWLEDGE CHECK</h3><p>Answer the space knowledge quiz and show what you've learned.</p><button onclick="openMission('quiz.html')">START QUIZ ↗</button></article>
+</div>
+<p class="dashboard-note">Mission links are placeholders. Change the file names in this HTML to match your existing minigame and quiz pages.</p>
+<button class="secondary" style="margin-top:18px" onclick="logout()">↶ BACK TO PROFILE</button>
+</div>
+</section>
+<div class="footer">SPACE MISSION: BEYOND EARTH <b>✦</b> A PIXEL-INSPIRED SPACE ADVENTURE</div>
+</main>
+<script>
+const form=document.getElementById('profileForm');
+const genderOptions=document.querySelectorAll('.gender-option');
+let selectedGender='boy';
+genderOptions.forEach(option=>{
+  option.addEventListener('click',()=>{
+    selectedGender=option.dataset.gender;
+    genderOptions.forEach(item=>item.classList.toggle('selected',item===option));
+    document.getElementById('previewAstronaut').textContent=selectedGender==='boy'?'👨🏻‍🚀':'👩🏻‍🚀';
+  });
+});
+form.addEventListener('submit',event=>{
+  event.preventDefault();
+  const name=document.getElementById('playerName').value.trim();
+  if(!name){document.getElementById('formMessage').textContent='Please enter your astronaut name first.';return;}
+  const profile={name,gender:selectedGender};
+  localStorage.setItem('beyondEarthProfile',JSON.stringify(profile));
+  showDashboard(profile);
+});
+function showDashboard(profile){
+  document.getElementById('entry').style.display='none';
+  document.getElementById('dashboard').classList.add('show');
+  document.getElementById('welcomeName').textContent=profile.name.toUpperCase();
+  document.getElementById('playerLabel').textContent=profile.name;
+  document.getElementById('playerAvatar').textContent=profile.gender==='boy'?'👨🏻‍🚀':'👩🏻‍🚀';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function logout(){
+  document.getElementById('dashboard').classList.remove('show');
+  document.getElementById('entry').style.display='grid';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function openMission(file){window.location.href=file;}
+const saved=localStorage.getItem('beyondEarthProfile');
+if(saved){try{showDashboard(JSON.parse(saved));}catch(e){localStorage.removeItem('beyondEarthProfile');}}
+</script>
+</body>
+</html>
