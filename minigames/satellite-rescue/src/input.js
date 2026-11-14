@@ -1,8 +1,12 @@
 /* input.js - Keyboard / mouse / pointer event handling */
 const PLAYING=['play','quiz','puzzle','dnd','code'];
 function onKey(k){
- if(scene=='guide'){if(k=='enter'||k==' '||k=='escape')scene='menu';return}
- if(scene=='menu'){if(k.length==1&&'123'.includes(k))startLevel(+k-1);return}
+ if(scene=='guide'){if(k=='enter'||k==' ')scene='menu';else if(k=='escape')scene='menu';return}
+ if(scene=='menu'){
+  if(k=='escape'){window.location.assign('../../index.html');return}
+  if(k.length==1&&'123'.includes(k))startLevel(+k-1);
+  return;
+ }
  if(scene=='intro'){if(k=='enter'||k==' ')scene='play';return}
  if(k=='escape'){if(scene=='pause')scene=prev;else if(PLAYING.includes(scene)){prev=scene;scene='pause';drag=-1}return}
  if(scene=='pause'){if(k=='r')startLevel(lv);return}
