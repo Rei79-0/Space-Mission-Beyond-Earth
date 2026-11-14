@@ -30,7 +30,7 @@ class UI {
     if (game.state === GameState.READY) this.drawGuide(ctx, game.best);
     if (game.state === GameState.PLAYING && !game.paused) this.drawPauseButton(ctx);
     if (game.paused) this.drawPauseOverlay(ctx);
-    if (game.state === GameState.DEAD) this.drawGameOver(ctx, game.score, game.best);
+    if (game.state === GameState.DEAD) this.drawGameOver(ctx, game.score, game.best, !!game.isCampaign());
   }
 
   drawScore(ctx, score) {
@@ -105,7 +105,7 @@ class UI {
     ctx.fillText('Press ESC or P to resume', W / 2, 475);
   }
 
-  drawGameOver(ctx, score, best) {
+  drawGameOver(ctx, score, best, campaign = false) {
     const W = CONFIG.WIDTH, H = CONFIG.HEIGHT;
     ctx.fillStyle = 'rgba(20,18,42,.7)';
     ctx.fillRect(W / 2 - 190, H / 2 - 110, 380, 220);
@@ -117,6 +117,15 @@ class UI {
     ctx.fillText(`Score: ${score}   Best: ${best}`, W / 2, H / 2 + 5);
     ctx.fillStyle = '#ffd23f';
     ctx.font = `20px ${UI.FONT}`;
-    ctx.fillText('Press Space, Enter or click to retry', W / 2, H / 2 + 60);
+    ctx.fillText(campaign ? 'STAGE 1 COMPLETE' : 'Press Space, Enter or click to retry', W / 2, H / 2 + 60);
+    if (campaign) {
+      ctx.fillStyle = '#2a8fa8';
+      ctx.fillRect(W / 2 - 210, H / 2 + 78, 420, 54);
+      ctx.strokeStyle = '#7fe8ff';
+      ctx.strokeRect(W / 2 - 210, H / 2 + 78, 420, 54);
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold 19px ${UI.FONT}`;
+      ctx.fillText('CONTINUE TO SATELLITE RESCUE', W / 2, H / 2 + 112);
+    }
   }
 }
