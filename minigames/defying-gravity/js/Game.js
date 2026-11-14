@@ -22,6 +22,10 @@ class Game {
     this.score = 0;
     this.best = this.loadBest();
     this.deadAt = 0;
+    this.stageStartedAt = 0;
+    this.elapsedSeconds = 0;
+    this.stageHistorySaved = false;
+    this.returnTimer = null;
     this.bgOffset = 0;
     this.columnsSpawned = 0;
     this.lastTime = performance.now();
@@ -46,6 +50,8 @@ class Game {
     if (this.paused) { this.paused = false; return; }
 
     if (this.state === GameState.READY) {
+      this.stageStartedAt = performance.now();
+      this.elapsedSeconds = 0;
       this.state = GameState.PLAYING;
       this.astronaut.flap();
       this.steam.burst(this.astronaut);
@@ -53,7 +59,7 @@ class Game {
       this.astronaut.flap();
       this.steam.burst(this.astronaut);
     } else if (this.state === GameState.DEAD && performance.now() - this.deadAt > CONFIG.RETRY_DELAY_MS) {
-      if (this.isCampaign()) this.goToSatelliteRescue();
+      if (this.isCampaign()) this.returnToDashboard();
       else this.reset();
     }
   }
@@ -63,14 +69,10 @@ class Game {
     catch (_) { return false; }
   }
 
-  goToSatelliteRescue() {
-    try {
-      const campaign = JSON.parse(localStorage.getItem('beyondEarthCampaign') || '{}');
-      campaign.stage = 2;
-      campaign.flightScore = this.score;
-      localStorage.setItem('beyondEarthCampaign', JSON.stringify(campaign));
-    } catch (_) {}
-    window.location.assign('../satellite-rescue/index.html');
+  returnToDashboard() {
+    if (this.returnTimer) clearTimeout(this.returnTimer);
+    if (this.isCampaign()) localStorage.removeItem('beyondEarthCampaign');
+    window.location.assign('../../index.html?stageReport=1');
   }
 
   togglePause() {
@@ -84,7 +86,7 @@ class Game {
 
   handlePointer(x, y) {
     if (this.state === GameState.DEAD && this.isCampaign()) {
-      if (x > CONFIG.WIDTH / 2 - 210 && x < CONFIG.WIDTH / 2 + 210 && y > 330 && y < 455) this.goToSatelliteRescue();
+      if (performance.now() - this.deadAt > CONFIG.RETRY_DELAY_MS) this.returnToDashboard();
       return;
     }
     if (this.paused) {
@@ -113,17 +115,40 @@ class Game {
     this.columns = [];
     this.steam.clear();
     this.score = 0;
+    this.stageStartedAt = 0;
+    this.elapsedSeconds = 0;
+    this.stageHistorySaved = false;
     this.bgOffset = 0;
     this.columnsSpawned = 0;
     this.state = GameState.READY;
   }
 
   gameOver() {
+    if (this.state === GameState.DEAD) return;
     this.state = GameState.DEAD;
     this.deadAt = performance.now();
     if (this.score > this.best) {
       this.best = this.score;
       this.saveBest();
+    }
+
+    if (this.isCampaign() && !this.stageHistorySaved) {
+      this.stageHistorySaved = true;
+      const elapsedSeconds = this.elapsedSeconds;
+      if (window.BeyondEarthHistory) {
+        window.BeyondEarthHistory.record({
+          key: 'defyingGravity',
+          game: 'Minigame 1 — Defying Gravity',
+          status: 'failed',
+          outcome: 'Stage failed',
+          score: this.score,
+          highScore: this.best,
+          elapsedSeconds,
+          details: { scoreAtFailure: this.score, bestScore: this.best }
+        });
+      }
+      // Let the player see the game-over score briefly, then return to the dashboard.
+      this.returnTimer = setTimeout(() => this.returnToDashboard(), 2200);
     }
   }
 
@@ -156,6 +181,7 @@ class Game {
     }
     if (this.state !== GameState.PLAYING) return;
 
+    this.elapsedSeconds += dt * 16.67 / 1000;
     this.astronaut.update(dt);
     this.spawnColumnIfNeeded();
 
