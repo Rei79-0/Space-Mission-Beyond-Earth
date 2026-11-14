@@ -30,7 +30,56 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 .feature-list{display:grid;gap:12px;margin-top:12px}.feature{display:flex;gap:12px;align-items:center;color:#d8d5ed;font-size:13px}.feature-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:10px;background:#261d4e;border:2px solid #604d9e}
 .dashboard{display:none;margin-top:24px}.dashboard.show{display:block}.welcome{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.player-chip{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#161b39;border:1px solid var(--line);border-radius:12px}.player-avatar{display:grid;place-items:center;min-width:44px;height:44px;background:#2c2d56;border:2px solid #6a64a8;border-radius:12px;font-size:24px}.player-status{font-size:11px;color:#cfc8ef;text-transform:uppercase;letter-spacing:1.4px}
 .dashboard-note{font-size:11px;color:#a7a4c5;margin-top:12px}.footer{text-align:center;color:#8583a9;font-size:11px;margin:34px 0 0}.footer b{color:#c7c1ee}
-.mission{background:linear-gradient(180deg,#1a1d3d,#11152e);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}.missions{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}.m-icon{font-size:30px}.mission h3{margin:0;font-family:'Press Start 2P';font-size:11px;line-height:1.7;color:var(--gold)}.mission p{margin:0;color:#d4d0f0;font-size:14px;line-height:1.5}.mission button{margin-top:auto;padding:12px 14px;border:0;border-radius:10px;background:#7bcaef;color:#091826;font-weight:900;cursor:pointer;font-family:'Press Start 2P';font-size:10px}
+
+.mission {
+    background: linear-gradient(180deg, #1a1d3d, #11152e);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.missions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+    align-items: stretch;
+}
+
+.m-icon { font-size: 30px; }
+
+.mission h3 {
+    margin: 0;
+    font-family: 'Press Start 2P';
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--gold);
+}
+
+.mission p {
+    margin: 0;
+    color: #d4d0f0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.mission button {
+    margin-top: auto;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #7bcaef;
+    color: #091826;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Press Start 2P';
+    font-size: 10px;
+}
+
 @media(max-width:760px){header{padding:18px 18px}.status{display:none}main{padding:0 18px}.layout{grid-template-columns:1fr}.hero{padding-top:20px}.hero p{font-size:14px}.missions{grid-template-columns:1fr}.panel{padding:18px 16px}} 
 </style>
 </head>
