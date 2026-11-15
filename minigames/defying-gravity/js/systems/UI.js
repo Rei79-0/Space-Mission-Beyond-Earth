@@ -25,19 +25,23 @@ class UI {
   }
 
   draw(ctx, game) {
-    this.drawScore(ctx, game.score);
+    this.drawScore(ctx, game);
 
     if (game.state === GameState.READY) this.drawGuide(ctx, game.best);
     if (game.state === GameState.PLAYING && !game.paused) this.drawPauseButton(ctx);
     if (game.paused) this.drawPauseOverlay(ctx);
-    if (game.state === GameState.DEAD) this.drawGameOver(ctx, game.score, game.best, !!game.isCampaign());
+    if (game.state === GameState.DEAD) this.drawGameOver(ctx, game.score, game.best);
   }
 
-  drawScore(ctx, score) {
+  drawScore(ctx, game) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fff';
     ctx.font = `bold 56px ${UI.FONT}`;
-    ctx.fillText(score, CONFIG.WIDTH / 2, 70);
+    ctx.fillText(game.score, CONFIG.WIDTH / 2, 70);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffd23f';
+    ctx.font = `bold 20px ${UI.FONT}`;
+    ctx.fillText(`COINS: ${game.coinsCollected}`, CONFIG.WIDTH - 28, 42);
   }
 
   drawGuide(ctx, best) {
@@ -105,7 +109,7 @@ class UI {
     ctx.fillText('Press ESC or P to resume', W / 2, 475);
   }
 
-  drawGameOver(ctx, score, best, campaign = false) {
+  drawGameOver(ctx, score, best) {
     const W = CONFIG.WIDTH, H = CONFIG.HEIGHT;
     ctx.fillStyle = 'rgba(20,18,42,.7)';
     ctx.fillRect(W / 2 - 190, H / 2 - 110, 380, 220);
@@ -117,11 +121,6 @@ class UI {
     ctx.fillText(`Score: ${score}   Best: ${best}`, W / 2, H / 2 + 5);
     ctx.fillStyle = '#ffd23f';
     ctx.font = `20px ${UI.FONT}`;
-    ctx.fillText(campaign ? 'STAGE 1 FAILED' : 'Press Space, Enter or click to retry', W / 2, H / 2 + 60);
-    if (campaign) {
-      ctx.fillStyle = '#b9c6f2';
-      ctx.font = `bold 17px ${UI.FONT}`;
-      ctx.fillText('RETURNING TO DASHBOARD...', W / 2, H / 2 + 105);
-    }
+    ctx.fillText('Press Space, Enter or click to return', W / 2, H / 2 + 60);
   }
 }
