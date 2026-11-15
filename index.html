@@ -35,8 +35,28 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 .upgrade-card .upgrade-description{margin-top:6px}
 .upgrade-card .upgrade-cost{margin-top:8px}
 .upgrade-card .upgrade-buy{margin-top:auto;width:100%;min-height:38px;padding:10px;border:0;color:#0d1022;font-weight:800;cursor:pointer;border-radius:10px}
+
+.avatar-sprite{display:block;width:58px;height:76px;image-rendering:pixelated;margin:0 auto 6px}
+.avatar-preview-sprite{width:104px;height:135px;image-rendering:pixelated;position:absolute;z-index:3;bottom:16px;left:calc(50% - 52px);filter:drop-shadow(4px 4px 0 #171832);animation:bob 2.2s ease-in-out infinite}
+.helmet-customizer{margin-top:16px;padding:13px;border:1px solid var(--line);border-radius:12px;background:#11162f}
+.helmet-swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(94px,1fr));gap:8px;margin-top:10px}
+.helmet-swatch{border:1px solid #55517d;border-radius:10px;background:#191d3a;color:#f4f0ff;padding:9px 7px;cursor:pointer;text-align:center;font:800 11px Nunito;min-height:68px}
+.helmet-swatch.active{border:2px solid var(--cyan);background:#202c50}
+.helmet-dot{display:block;width:22px;height:22px;border-radius:50%;margin:0 auto 6px;border:2px solid #ffffff88}
+.helmet-swatch:disabled{opacity:.72;cursor:default}
+.credit-note{font-size:11px;color:#ffd98a;margin-top:8px}
 @media(max-width:760px){#upgradeShop.upgrade-grid{grid-template-columns:1fr}}
 .mission{background:linear-gradient(180deg,#1a1d3d,#11152e);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}.missions{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}.m-icon{font-size:30px}.mission h3{margin:0;font-family:'Press Start 2P';font-size:11px;line-height:1.7;color:var(--gold)}.mission p{margin:0;color:#d4d0f0;font-size:14px;line-height:1.5}.mission button{margin-top:auto;padding:12px 14px;border:0;border-radius:10px;background:#7bcaef;color:#091826;font-weight:900;cursor:pointer;font-family:'Press Start 2P';font-size:10px}
+
+.avatar-sprite{display:block;width:58px;height:76px;image-rendering:pixelated;margin:0 auto 6px}
+.avatar-preview-sprite{width:104px;height:135px;image-rendering:pixelated;position:absolute;z-index:3;bottom:16px;left:calc(50% - 52px);filter:drop-shadow(4px 4px 0 #171832);animation:bob 2.2s ease-in-out infinite}
+.helmet-customizer{margin-top:16px;padding:13px;border:1px solid var(--line);border-radius:12px;background:#11162f}
+.helmet-swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(94px,1fr));gap:8px;margin-top:10px}
+.helmet-swatch{border:1px solid #55517d;border-radius:10px;background:#191d3a;color:#f4f0ff;padding:9px 7px;cursor:pointer;text-align:center;font:800 11px Nunito;min-height:68px}
+.helmet-swatch.active{border:2px solid var(--cyan);background:#202c50}
+.helmet-dot{display:block;width:22px;height:22px;border-radius:50%;margin:0 auto 6px;border:2px solid #ffffff88}
+.helmet-swatch:disabled{opacity:.72;cursor:default}
+.credit-note{font-size:11px;color:#ffd98a;margin-top:8px}
 @media(max-width:760px){header{padding:18px 18px}.status{display:none}main{padding:0 18px}.layout{grid-template-columns:1fr}.hero{padding-top:20px}.hero p{font-size:14px}.missions{grid-template-columns:1fr}.panel{padding:18px 16px}} 
 </style>
 </head>
@@ -59,8 +79,14 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 <input id="playerName" maxlength="18" placeholder="Enter your name..." autocomplete="nickname" required>
 <label>CHOOSE YOUR ASTRONAUT</label>
 <div class="gender">
-<label class="gender-option selected" data-gender="boy"><input type="radio" name="gender" value="boy" checked><span class="avatar">👨🏻‍🚀</span><strong>BOY ASTRONAUT</strong></label>
-<label class="gender-option" data-gender="girl"><input type="radio" name="gender" value="girl"><span class="avatar">👩🏻‍🚀</span><strong>GIRL ASTRONAUT</strong></label>
+<label class="gender-option selected" data-gender="boy"><input type="radio" name="gender" value="boy" checked><canvas class="avatar-sprite" id="boyAvatarSprite" width="40" height="52"></canvas><strong>BOY ASTRONAUT</strong></label>
+<label class="gender-option" data-gender="girl"><input type="radio" name="gender" value="girl"><canvas class="avatar-sprite" id="girlAvatarSprite" width="40" height="52"></canvas><strong>GIRL ASTRONAUT</strong></label>
+</div>
+<div class="helmet-customizer">
+  <div style="font-weight:900;font-size:12px;letter-spacing:1px;color:#d9d5f4">CUSTOMISE YOUR HELMET</div>
+  <div style="font-size:11px;color:#b8b2d8;margin-top:5px">Blue for the boy astronaut, pink for the girl astronaut. Unlock more colours with credits.</div>
+  <div id="helmetColorOptions" class="helmet-swatches"></div>
+  <div id="profileCreditBalance" class="credit-note">Available credits: 300</div>
 </div>
 <button class="primary" type="submit">▶ START YOUR MISSION</button>
 <div class="message" id="formMessage" aria-live="polite"></div>
@@ -69,7 +95,7 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 </div>
 <div class="panel preview">
 <div class="preview-top"><h2 class="panel-title">THE UNIVERSE AWAITS</h2><p class="panel-sub">A little training. A giant leap for you.</p>
-<div class="scene"><div class="moon"></div><div class="hill back"></div><div class="hill"></div><div class="crater c1"></div><div class="crater c2"></div><div class="astronaut" id="previewAstronaut">👨🏻‍🚀</div></div>
+<div class="scene"><div class="moon"></div><div class="hill back"></div><div class="hill"></div><div class="crater c1"></div><div class="crater c2"></div><canvas id="previewAstronaut" class="avatar-preview-sprite" width="40" height="52"></canvas></div>
 <div class="feature-list">
 <div class="feature"><span class="feature-icon">🪐</span><span><b>Explore space</b><br>Discover the wonders beyond Earth.</span></div>
 <div class="feature"><span class="feature-icon">🧑‍🚀</span><span><b>Complete astronaut training</b><br>Build your skills mission by mission.</span></div>
@@ -80,31 +106,9 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 <section class="dashboard" id="dashboard">
 <div class="panel">
 <div class="welcome"><div><h2 class="panel-title">WELCOME TO THE CREW, <span id="welcomeName"></span>!</h2><p class="panel-sub">Your astronaut training hub is ready. Choose a mission below.</p></div><div class="player-chip"><div class="player-avatar" id="playerAvatar">👨🏻‍🚀</div><div><div class="player-status">CURRENT CREW MEMBER</div><div id="playerLabel" style="font-weight:900; font-size:15px;">Explorer</div></div></div></div>
-
-<div class="missions">
-
-  <article class="mission">
-    <div class="m-icon">🚀</div>
-    <h3>MISSION 01</h3>
-    <p>Enter your first training challenge and test your astronaut skills.</p>
-    <button onclick="openMission('minigames/defying-gravity/index.html')">PLAY NOW</button>
-  </article>
-
-  <article class="mission">
-    <div class="m-icon">🔧</div>
-    <h3>MISSION 02</h3>
-    <p>Take on another hands-on challenge in your journey through space.</p>
-    <button onclick="openMission('minigames/satellite-rescue/index.html')">PLAY NOW</button>
-  </article>
-
-  <article class="mission">
-    <div class="m-icon">📡</div>
-    <h3>KNOWLEDGE CHECK</h3>
-    <p>Answer the space knowledge quiz and show what you've learned.</p>
-    <button onclick="openMission('quiz.html')">START QUIZ</button>
-  </article>
-
-</div>
+<article class="mission"><div class="m-icon">🚀</div><h3>MISSION 01</h3><p>Enter your first training challenge and test your astronaut skills.</p><button onclick="launchCurrentMission()">PLAY NOW</button></article>
+<article class="mission"><div class="m-icon">🔧</div><h3>MISSION 02</h3><p>Take on another hands-on challenge in your journey through space.</p><button onclick="launchSatelliteRescue()">PLAY NOW</button></article>
+<article class="mission"><div class="m-icon">📡</div><h3>KNOWLEDGE CHECK</h3><p>Answer the space knowledge quiz and show what you've learned.</p><button onclick="openMission('quiz.html')">START QUIZ</button></article>
 </div>
 
 <div class="mission-planner-panel" style="margin-top:22px;border:1px solid var(--line);background:#121a36bb;border-radius:14px;padding:16px;">
@@ -140,18 +144,67 @@ input,select{width:100%;background:#0d1128;color:white;border:2px solid #55517d;
 <div class="footer">SPACE MISSION: BEYOND EARTH <b>✦</b> A PIXEL-INSPIRED SPACE ADVENTURE</div>
 </main>
 <script src="mission-system.js"></script>
+<script src="mission-history.js"></script>
+<script src="astronaut-profile.js"></script>
 <script>
 const form=document.getElementById('profileForm');
 const genderOptions=document.querySelectorAll('.gender-option');
 let selectedGender='boy';
+let selectedHelmetColor='blue';
+const helmetColorOrder=['blue','pink','purple','teal','gold','green'];
+const helmetNames={blue:'Cosmic Blue',pink:'Star Pink',purple:'Nebula Purple',teal:'Orbit Teal',gold:'Solar Gold',green:'Aurora Green'};
+const helmetCosts={blue:0,pink:0,purple:60,teal:80,gold:120,green:100};
+const profileAtLoad=SpaceMissionSystem.loadProfile();
+selectedGender=profileAtLoad.gender==='girl'?'girl':'boy';
+selectedHelmetColor=profileAtLoad.helmetColor || (selectedGender==='girl'?'pink':'blue');
+
+function drawProfileAstronauts(){
+  const boy=document.getElementById('boyAvatarSprite');
+  const girl=document.getElementById('girlAvatarSprite');
+  const preview=document.getElementById('previewAstronaut');
+  if(boy){const c=BeyondEarthAstronaut.create('boy','blue',4);boy.getContext('2d').drawImage(c,0,0,boy.width,boy.height);}
+  if(girl){const c=BeyondEarthAstronaut.create('girl','pink',4);girl.getContext('2d').drawImage(c,0,0,girl.width,girl.height);}
+  if(preview){const c=BeyondEarthAstronaut.create(selectedGender,selectedHelmetColor,4);preview.getContext('2d').clearRect(0,0,preview.width,preview.height);preview.getContext('2d').drawImage(c,0,0,preview.width,preview.height);}
+}
+function renderHelmetColors(){
+  const profile=SpaceMissionSystem.loadProfile();
+  const unlocked=Array.isArray(profile.unlockedHelmetColors)?profile.unlockedHelmetColors:['blue','pink'];
+  const host=document.getElementById('helmetColorOptions'); if(!host)return;
+  host.innerHTML='';
+  helmetColorOrder.forEach(color=>{
+    const isUnlocked=unlocked.includes(color), active=selectedHelmetColor===color;
+    const button=document.createElement('button'); button.type='button';
+    button.className='helmet-swatch'+(active?' active':'');
+    button.innerHTML=`<span class="helmet-dot" style="background:${BeyondEarthAstronaut.colors[color]}"></span>${helmetNames[color]}<br><small>${isUnlocked?'UNLOCKED':helmetCosts[color]+' CREDITS'}</small>`;
+    button.addEventListener('click',()=>{
+      if(!isUnlocked){
+        const purchase=SpaceMissionSystem.buyHelmetColor(color);
+        if(!purchase.ok){alert(purchase.message);return;}
+      }
+      selectedHelmetColor=color;
+      SpaceMissionSystem.selectHelmetColor(color);
+      renderHelmetColors(); drawProfileAstronauts(); updateProfileCredits();
+    });
+    host.appendChild(button);
+  });
+}
+function updateProfileCredits(){const el=document.getElementById('profileCreditBalance');if(el)el.textContent='Available credits: '+SpaceMissionSystem.loadProfile().credits;}
 
 genderOptions.forEach(option=>{
   option.addEventListener('click',()=>{
     selectedGender=option.dataset.gender;
+    // Default helmet colours are blue for boy and pink for girl unless a custom colour is selected.
+    const profile=SpaceMissionSystem.loadProfile();
+    if(!profile.helmetColor || profile.helmetColor==='blue' || profile.helmetColor==='pink') selectedHelmetColor=selectedGender==='girl'?'pink':'blue';
     genderOptions.forEach(item=>item.classList.toggle('selected',item===option));
-    document.getElementById('previewAstronaut').textContent=selectedGender==='boy'?'👨🏻‍🚀':'👩🏻‍🚀';
+    renderHelmetColors(); drawProfileAstronauts();
   });
 });
+
+// Always open the profile page first; prefill returning player's saved choices.
+if(profileAtLoad.name) document.getElementById('playerName').value=profileAtLoad.name;
+genderOptions.forEach(option=>option.classList.toggle('selected',option.dataset.gender===selectedGender));
+renderHelmetColors(); updateProfileCredits(); drawProfileAstronauts();
 
 form.addEventListener('submit',event=>{
   event.preventDefault();
@@ -162,7 +215,9 @@ form.addEventListener('submit',event=>{
   const profile={
     name,
     gender:selectedGender,
-    credits:Number(existingProfile.credits || 300),
+    credits:Number(existingProfile.credits ?? 300),
+    helmetColor:selectedHelmetColor,
+    unlockedHelmetColors:Array.isArray(existingProfile.unlockedHelmetColors)?existingProfile.unlockedHelmetColors:['blue','pink'],
     upgrades: existingProfile.upgrades || {},
     missionHistory: Array.isArray(existingProfile.missionHistory) ? existingProfile.missionHistory : [],
     missionRecords: existingProfile.missionRecords && typeof existingProfile.missionRecords === 'object' ? existingProfile.missionRecords : {}
@@ -184,7 +239,11 @@ function showDashboard(profile){
   document.getElementById('dashboard').classList.add('show');
   document.getElementById('welcomeName').textContent=(safeProfile.name || 'EXPLORER').toUpperCase();
   document.getElementById('playerLabel').textContent=safeProfile.name || 'Explorer';
-  document.getElementById('playerAvatar').textContent=safeProfile.gender==='girl'?'👩🏻‍🚀':'👨🏻‍🚀';
+  const playerAvatar=document.getElementById('playerAvatar');
+  playerAvatar.innerHTML='<canvas id="dashboardAstronaut" width="30" height="39" style="width:30px;height:39px;image-rendering:pixelated"></canvas>';
+  const dashCanvas=document.getElementById('dashboardAstronaut');
+  const dashSprite=BeyondEarthAstronaut.create(safeProfile.gender||'boy',safeProfile.helmetColor||(safeProfile.gender==='girl'?'pink':'blue'),3);
+  dashCanvas.getContext('2d').drawImage(dashSprite,0,0,dashCanvas.width,dashCanvas.height);
   renderMissionPlanner();
   renderUpgradeShop();
   renderMissionHistory();
@@ -285,11 +344,7 @@ function renderMissionHistory(){
 
 function openMission(file){window.location.href=file;}
 
-const saved = localStorage.getItem('beyondEarthProfile');
-if(saved){
-  try{showDashboard(JSON.parse(saved));}
-  catch(e){localStorage.removeItem('beyondEarthProfile');}
-}
+// Returning players remain on the profile page and confirm their profile before the dashboard.
 </script>
 </body>
 </html>
