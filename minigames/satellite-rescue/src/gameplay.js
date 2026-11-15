@@ -10,32 +10,47 @@ function openQuiz(it){cur=it;if(!pool.length)pool=QS.map((_,i)=>i);const q=QS[po
 function answer(i){const o=opts[i];if(!o||o.dis)return;att++;
  if(o.ok){cur.got=true;msg='GOT '+ITN[cur.type]+'!';msgT=2.5;scene='play';if(items.every(v=>v.got)){phase='repair';msg='ALL PARTS FOUND! GO TO THE SATELLITE';msgT=4}}
  else{o.dis=true;qmsg='WRONG ANSWER - TRY AGAIN'}}
-function finish(){const L=LV[lv],T=t+pen,tf=T<=L.par?1:Math.max(0,1-(T-L.par)/(L.par*1.5)),acc=L.n/att,pts=Math.round(60*tf+40*acc);
- res[lv]={T,elapsedSeconds:t,att,hits,pts,tier:pts>=90?3:pts>=70?2:pts>=45?1:0};scene='result'}
+function campaignData(){try{return JSON.parse(localStorage.getItem('beyondEarthCampaign')||'null')}catch(_){return null}}
+function persistSatelliteProgress(){
+ const campaign=campaignData();
+ if(!campaign||campaign.stage!==2)return;
+ try{localStorage.setItem('beyondEarthSatelliteProgress',JSON.stringify({startedAt:campaign.startedAt,levels:res}))}catch(_){}
+}
+function finish(){const L=LV[lv],T=t+pen,tf=T<=L.par?1:Math.max(0,1-(T-L.par)/(L.par*1.5)),acc=L.n/Math.max(1,att),pts=Math.round(60*tf+40*acc);
+ res[lv]={T,elapsedSeconds:t,att,hits,pts,tier:pts>=90?3:pts>=70?2:pts>=45?1:0};persistSatelliteProgress();scene='result'}
+function completeSatelliteCampaign(){
+ const campaign=campaignData();
+ const completed=res.slice(0,LV.length);
+ if(completed.length<LV.length||completed.some(r=>!r))return false;
+ const totalScore=completed.reduce((sum,r)=>sum+(Number(r.pts)||0),0);
+ const totalTime=completed.reduce((sum,r)=>sum+(Number(r.elapsedSeconds??r.T)||0),0);
+ const completionKey='beyondEarthSatelliteCompleted:'+String(campaign?.startedAt||'standalone');
+ try{
+  if(localStorage.getItem(completionKey)!=='1'){
+   if(window.BeyondEarthHistory)window.BeyondEarthHistory.record({
+    key:'satelliteRescue',game:'Minigame 2 — Satellite Rescue',status:'completed',outcome:'All 3 levels cleared',
+    score:totalScore,highScore:totalScore,creditsEarned:100,elapsedSeconds:totalTime,
+    details:{levels:completed.map((r,i)=>({level:LV[i].name,score:r.pts,timeSeconds:r.elapsedSeconds??r.T,adjustedTimeSeconds:r.T,attempts:r.att,hits:r.hits,tier:r.tier})),levelsCleared:completed.length,totalScore}
+   });
+   localStorage.setItem(completionKey,'1');
+  }
+  localStorage.setItem('beyondEarthCampaignResult',JSON.stringify({objective:campaign?.objective||'Satellite Rescue',rescueScore:totalScore,levelsCleared:completed.length,elapsedSeconds:totalTime,completedAt:Date.now()}));
+ }catch(_){}
+ localStorage.removeItem('beyondEarthSatelliteProgress');
+ localStorage.removeItem('beyondEarthCampaign');
+ window.location.assign('../../index.html?missionComplete=1&returnToDashboard=1');
+ return true;
+}
 function next(){
  const campaign=campaignData();
+ persistSatelliteProgress();
  if(campaign&&campaign.stage===2){
-   try{
-     const stageResult=res[lv]||{pts:0,T:t+pen,att,hits,tier:0};
-     const result={objective:campaign.objective,flightScore:campaign.flightScore||0,rescueScore:stageResult.pts,completedAt:Date.now()};
-     localStorage.setItem('beyondEarthCampaignResult',JSON.stringify(result));
-     if(window.BeyondEarthHistory){
-       window.BeyondEarthHistory.record({
-         key:'satelliteRescue',
-         game:'Minigame 2 — Satellite Rescue',
-         status:'completed',
-         outcome:'Stage completed',
-         score:stageResult.pts,
-         highScore:stageResult.pts,
-         creditsEarned:100,
-         elapsedSeconds:stageResult.elapsedSeconds ?? stageResult.T,
-         details:{adjustedTimeSeconds:stageResult.T,attempts:stageResult.att,hits:stageResult.hits,tier:stageResult.tier}
-       });
-     }
-     localStorage.removeItem('beyondEarthCampaign');
-   }catch(_){}
-   window.location.assign('../../index.html?missionComplete=1');
-   return;
+  if(res.slice(0,LV.length).length===LV.length&&res.slice(0,LV.length).every(Boolean)){completeSatelliteCampaign();return;}
+  scene='menu';
+  return;
+ }
+ if(res.slice(0,LV.length).length===LV.length&&res.slice(0,LV.length).every(Boolean)){
+  completeSatelliteCampaign();return;
  }
  scene='menu';
 }
