@@ -1578,6 +1578,7 @@
           outcome: 'Quiz completed',
           score: player.score,
           highScore: player.score,
+          creditsEarned: player.correctCount * 10,
           elapsedSeconds: quizStartedAt ? (performance.now() - quizStartedAt) / 1000 : 0,
           details: {
             correctAnswers: player.correctCount,
