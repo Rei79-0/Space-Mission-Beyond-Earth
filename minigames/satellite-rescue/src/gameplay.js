@@ -27,13 +27,11 @@ function next(){
          outcome:'Stage completed',
          score:stageResult.pts,
          highScore:stageResult.pts,
+         creditsEarned:100,
          elapsedSeconds:stageResult.elapsedSeconds ?? stageResult.T,
          details:{adjustedTimeSeconds:stageResult.T,attempts:stageResult.att,hits:stageResult.hits,tier:stageResult.tier}
        });
      }
-     const profile=JSON.parse(localStorage.getItem('beyondEarthProfile')||'{}');
-     profile.credits=Number(profile.credits??300)+100;
-     localStorage.setItem('beyondEarthProfile',JSON.stringify(profile));
      localStorage.removeItem('beyondEarthCampaign');
    }catch(_){}
    window.location.assign('../../index.html?missionComplete=1');
