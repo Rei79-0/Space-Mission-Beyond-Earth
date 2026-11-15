@@ -20,6 +20,8 @@ class Game {
     this.state = GameState.READY;
     this.paused = false;
     this.score = 0;
+    this.coins = [];
+    this.coinsCollected = 0;
     this.best = this.loadBest();
     this.deadAt = 0;
     this.stageStartedAt = 0;
@@ -72,7 +74,7 @@ class Game {
   returnToDashboard() {
     if (this.returnTimer) clearTimeout(this.returnTimer);
     if (this.isCampaign()) localStorage.removeItem('beyondEarthCampaign');
-    window.location.assign('../../index.html?stageReport=1');
+    window.location.assign('../../index.html?returnToDashboard=1&stageReport=1');
   }
 
   togglePause() {
@@ -96,7 +98,7 @@ class Game {
         this.reset();
         this.paused = false;
       } else if (action === 'main-menu') {
-        window.location.assign('../../index.html');
+        window.location.assign('../../index.html?returnToDashboard=1');
       }
       return;
     }
@@ -115,6 +117,8 @@ class Game {
     this.columns = [];
     this.steam.clear();
     this.score = 0;
+    this.coins = [];
+    this.coinsCollected = 0;
     this.stageStartedAt = 0;
     this.elapsedSeconds = 0;
     this.stageHistorySaved = false;
@@ -144,8 +148,8 @@ class Game {
           score: this.score,
           highScore: this.best,
           elapsedSeconds,
-          creditsEarned: Math.min(100, Math.max(10, this.score * 5)),
-          details: { scoreAtFailure: this.score, bestScore: this.best }
+          creditsEarned: this.coinsCollected * 5,
+          details: { scoreAtFailure: this.score, bestScore: this.best, coinsCollected: this.coinsCollected, creditsPerCoin: 5 }
         });
       }
       // Every attempt returns to the dashboard after the result is shown.
@@ -164,7 +168,10 @@ class Game {
   spawnColumnIfNeeded() {
     const last = this.columns[this.columns.length - 1];
     if (!last || last.x < CONFIG.WIDTH - CONFIG.COLUMN_SPACING) {
-      this.columns.push(new AsteroidColumn(this.asteroidSprites, this.columnsSpawned++ % this.asteroidSprites.length));
+      const column = new AsteroidColumn(this.asteroidSprites, this.columnsSpawned++ % this.asteroidSprites.length);
+      this.columns.push(column);
+      // A collectible coin floats safely in the centre of each asteroid gap.
+      this.coins.push({ x: column.x, y: column.gapY, collected: false, phase: Math.random() * Math.PI * 2 });
     }
   }
 
@@ -195,6 +202,18 @@ class Game {
       if (column.collidesWith(this.astronaut)) return this.gameOver();
     }
 
+    this.coins.forEach(coin => {
+      if (coin.collected) return;
+      coin.x -= CONFIG.SCROLL_SPEED * dt;
+      coin.phase += dt * 0.08;
+      const dx = coin.x - this.astronaut.x;
+      const dy = coin.y - this.astronaut.y;
+      if (Math.hypot(dx, dy) < 28) {
+        coin.collected = true;
+        this.coinsCollected += 1;
+      }
+    });
+    this.coins = this.coins.filter(coin => !coin.collected && coin.x > -24);
     this.columns = this.columns.filter(c => !c.isOffscreen);
     if (this.astronaut.hitsFloor) this.gameOver();
   }
@@ -205,6 +224,13 @@ class Game {
     ctx.drawImage(this.background, CONFIG.WIDTH - this.bgOffset, 0);
 
     this.columns.forEach(c => c.draw(ctx));
+    this.coins.forEach(coin => {
+      ctx.save(); ctx.translate(coin.x, coin.y + Math.sin(coin.phase) * 4);
+      ctx.fillStyle = '#8b4b12'; ctx.fillRect(-10, -10, 20, 20);
+      ctx.fillStyle = '#ffd23f'; ctx.fillRect(-8, -10, 16, 20);
+      ctx.fillStyle = '#fff2a6'; ctx.fillRect(-4, -7, 5, 14);
+      ctx.fillStyle = '#d88a18'; ctx.fillRect(3, -5, 3, 10); ctx.restore();
+    });
     this.steam.draw(ctx);
     this.astronaut.draw(ctx, this.state !== GameState.READY);
     this.ui.draw(ctx, this);
