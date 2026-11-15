@@ -27,6 +27,13 @@ class AstronautSprite {
   };
 
   static create() {
-    return SpriteFactory.fromMap(AstronautSprite.MAP, AstronautSprite.PALETTE, AstronautSprite.SCALE);
+    const palette = { ...AstronautSprite.PALETTE };
+    // Use the helmet colour selected on the profile page.
+    try {
+      const profile = JSON.parse(localStorage.getItem('beyondEarthProfile') || '{}');
+      const helmetColors = { blue: '#3988ff', pink: '#ff78bd', purple: '#ad82ff', teal: '#49d8d0', gold: '#f2bd42', green: '#72d99a' };
+      palette.B = helmetColors[profile.helmetColor] || (profile.gender === 'girl' ? helmetColors.pink : helmetColors.blue);
+    } catch (_) { /* keep the default game sprite palette */ }
+    return SpriteFactory.fromMap(AstronautSprite.MAP, palette, AstronautSprite.SCALE);
   }
 }
