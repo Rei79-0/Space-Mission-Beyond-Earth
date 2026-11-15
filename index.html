@@ -309,7 +309,14 @@ function launchCurrentMission(){
 function launchSatelliteRescue(){
   const plan=getCurrentPlanFromForm();
   SpaceMissionSystem.savePlan(plan);
-  localStorage.setItem('beyondEarthCampaign',JSON.stringify({objective:plan.objective,stage:2,startedAt:Date.now()}));
+  let campaign=null;
+  try { campaign=JSON.parse(localStorage.getItem('beyondEarthCampaign')||'null'); } catch(_) {}
+  // Resume the same unfinished rescue campaign when returning from the level menu.
+  if(!campaign || campaign.stage!==2 || campaign.objective!==plan.objective){
+    localStorage.removeItem('beyondEarthSatelliteProgress');
+    campaign={objective:plan.objective,stage:2,startedAt:Date.now()};
+    localStorage.setItem('beyondEarthCampaign',JSON.stringify(campaign));
+  }
   window.location.href='minigames/satellite-rescue/index.html';
 }
 function renderUpgradeShop(){
@@ -350,9 +357,9 @@ function renderMissionHistory(){
     const detail = report.key === 'knowledgeCheck'
       ? `${report.details?.correctAnswers ?? 0}/${report.details?.totalQuestions ?? 0} correct answers • Best streak: ${report.details?.maxStreak ?? 0}`
       : report.key === 'satelliteRescue'
-        ? `Attempts: ${report.details?.attempts ?? 0} • Hits: ${report.details?.hits ?? 0} • Rank: ${report.details?.tier ?? 0}`
+        ? `Levels cleared: ${report.details?.levelsCleared ?? report.details?.levels?.filter(Boolean).length ?? 0}/3 • Combined score: ${report.details?.totalScore ?? report.score ?? 0}`
         : report.key === 'defyingGravity'
-          ? `Score when failed: ${report.details?.scoreAtFailure ?? report.score ?? 0}`
+          ? `Score when failed: ${report.details?.scoreAtFailure ?? report.score ?? 0} • Coins collected: ${report.details?.coinsCollected ?? 0}`
           : '';
     item.innerHTML = `
       <div style="font-weight:800;color:#ffd23f;">${report.game || report.objective || 'Mission activity'}</div>
@@ -367,7 +374,14 @@ function renderMissionHistory(){
 
 function openMission(file){window.location.href=file;}
 
-// Returning players remain on the profile page and confirm their profile before the dashboard.
+// Returning from a minigame is a dashboard route: do not force the player through profile confirmation again.
+const returnParams = new URLSearchParams(window.location.search);
+if (returnParams.has('returnToDashboard') || returnParams.has('stageReport') || returnParams.has('missionComplete')) {
+  showDashboard(SpaceMissionSystem.loadProfile());
+  if (returnParams.has('returnToDashboard') || returnParams.has('stageReport')) {
+    history.replaceState({}, '', window.location.pathname);
+  }
+}
 </script>
 </body>
 </html>
