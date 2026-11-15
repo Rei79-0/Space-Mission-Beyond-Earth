@@ -75,10 +75,11 @@ input{flex:1;min-width:150px}
 #fb h2{margin:2px 0;font-size:1.4rem}
 #fb .gain{font-weight:900;font-size:1.2rem;color:var(--good)}
 #fb p{margin:8px 0 14px;text-align:left;font-size:.95rem}
-#rank{color:var(--mute);font-size:.9rem;margin-bottom:12px}
 @keyframes pop{0%{transform:scale(.9);opacity:.5}70%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
 /* results */
 #end{text-align:center;padding-top:10px}
+#resultName{color:var(--mute);margin:4px 0 10px}
+.result-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px 0}
 #end h1{margin:4px 0}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
 .stats div{padding:10px 4px;font-size:.78rem;color:var(--mute)}
@@ -108,10 +109,10 @@ input{flex:1;min-width:150px}
 <section id="start" class="card">
   <div class="logo">🚀</div>
   <h1>Could you become a Canadian astronaut?</h1>
-  <p>10 questions based on the Canadian Space Agency’s 2017 recruitment campaign. Answer fast for more points and use power-ups to climb the leaderboard.</p>
-  <div class="avs" id="avs"></div>
+  <p>10 questions based on the Canadian Space Agency’s 2017 recruitment campaign. Answer quickly, build streaks and use power-ups to maximise your score.</p>
+  <p id="quizPlayer" class="chip" style="display:inline-block;margin:4px 0 12px">Astronaut: Explorer</p>
   <div class="row">
-    <input id="nick" maxlength="16" value="Cmdr. Maple" aria-label="Your name">
+    <label for="secs">Time per question</label>
     <select id="secs" aria-label="Time per question"><option value="15">15 seconds</option><option value="20" selected>20 seconds</option><option value="30">30 seconds</option></select>
   </div>
   <div class="pu-info">
@@ -141,28 +142,35 @@ input{flex:1;min-width:150px}
   <div class="opts" id="opts"></div>
   <div class="card hide" id="fb">
     <div class="big" id="fbi"></div><h2 id="fbt"></h2><div class="gain" id="fbg"></div>
-    <p id="fbe"></p><div id="rank"></div>
+    <p id="fbe"></p>
     <button class="btn" id="next">Next question</button>
   </div>
 </section>
 
 <section id="end" class="hide">
-  <div style="font-size:3rem" id="eic">🏆</div>
+  <div style="font-size:3rem" id="eic">🚀</div>
   <h1 id="eh">Quiz complete!</h1>
-  <div id="erank" style="color:var(--mute)"></div>
+  <div id="resultName">Astronaut: Explorer</div>
   <div class="stats">
     <div class="card"><b id="s1">0</b>Total points</div>
     <div class="card"><b id="s2">0%</b>Accuracy</div>
     <div class="card"><b id="s3">0</b>Best streak</div>
     <div class="card"><b id="s4">–</b>Fastest answer</div>
+    <div class="card"><b id="s5">0</b>Correct answers</div>
+    <div class="card"><b id="s6">0s</b>Time taken</div>
+    <div class="card"><b id="s7">0</b>Credits earned</div>
   </div>
-  <div class="lb" id="lb"></div>
-  <div class="row"><button class="btn alt" id="revb">Review answers</button><button class="btn" id="again">Play again</button></div>
+  <div class="result-actions">
+    <button class="btn alt" id="revb">Review answers</button>
+    <button class="btn" id="again">Play again</button>
+    <button class="btn alt" id="exitMenu">Exit to main menu</button>
+  </div>
   <div id="rev" class="hide"></div>
 </section>
 
 </div>
 <div id="modal" class="hide" role="dialog" aria-modal="true"><div class="card"><div id="mi"></div><h3 id="mh"></h3><p id="md"></p><button class="btn" id="mok">Got it</button></div></div>
+<script src="mission-history.js"></script>
 <script>
 const Q=[
 {q:"Who can apply?",cr:"Credit: NASA",o:["Canadian citizens living in Canada exclusively","Canadian citizens living in Canada or abroad","Persons residing in Canada and Canadian citizens residing abroad","Martian citizens living in Canada"],a:2,e:"Persons residing in Canada (including permanent residents) and Canadian citizens residing abroad can apply, with preference given to Canadian citizens."},
@@ -177,19 +185,32 @@ const Q=[
 {q:"How many astronauts were selected during the Canadian Space Agency's 2017 recruitment campaign?",cr:"Credit: Canadian Space Agency",o:["1","2","3","4"],a:1,e:"Out of 3,772 applicants, 2 astronauts were selected in July 2017: Joshua Kutryk and Jenni Gibbons!"}
 ];
 const PU=[["fifty","🎯","50/50"],["freeze","❄️","Time freeze"],["dbl","⚡","Double points"],["shield","🛡️","Streak shield"]];
-const COL=["--c1","--c2","--c3","--c4"],AVS=["🧑‍🚀","👩‍🚀","🛰️","🌕","🛸","🪐"];
+const COL=["--c1","--c2","--c3","--c4"];
 const $=id=>document.getElementById(id);
-let me,bots,qi,lim,tmr,t0,paused,freeze,dbl,shield,done,inv,av=0;
+let me,qi,lim,tmr,t0,quizStartedAt,paused,freeze,dbl,shield,done,inv,quizSaved=false;
 
-AVS.forEach((e,i)=>{const b=document.createElement('button');b.className='av'+(i?'':' on');b.textContent=e;b.setAttribute('aria-label','Avatar '+(i+1));
- b.onclick=()=>{av=i;document.querySelectorAll('.av').forEach(x=>x.classList.remove('on'));b.classList.add('on')};$('avs').appendChild(b)});
+function getPlayerName(){
+ try {
+  const profile=JSON.parse(localStorage.getItem('beyondEarthProfile')||'{}');
+  return (profile.name||'Explorer').trim() || 'Explorer';
+ } catch (_) { return 'Explorer'; }
+}
+function goToDashboard(){
+ clearInterval(tmr);
+ window.location.href='index.html?returnToDashboard=1';
+}
+$('quizPlayer').textContent='Astronaut: '+getPlayerName();
+$('exitMenu').onclick=goToDashboard;
+window.addEventListener('keydown',event=>{
+ if(event.key==='Escape') goToDashboard();
+});
 
 function show(id){['start','game','end'].forEach(s=>$(s).classList.toggle('hide',s!==id))}
 
 $('go').onclick=()=>{
- me={name:$('nick').value.trim()||'Cmdr. Maple',e:AVS[av],score:0,streak:0,best:0,ok:0,fast:null,log:[]};
- bots=[["Chris H.","👩‍🚀",.78],["Roberta B.","🛰️",.82],["Jeremy H.","🌕",.72],["Jenni G.","🛸",.76],["Joshua K.","🪐",.69]].map(b=>({name:b[0],e:b[1],skill:b[2],score:0}));
- inv={fifty:0,freeze:0,dbl:0,shield:0};lim=+$('secs').value;qi=0;show('game');ask();
+ me={name:getPlayerName(),score:0,streak:0,best:0,ok:0,fast:null,log:[]};
+ inv={fifty:0,freeze:0,dbl:0,shield:0};lim=+$('secs').value;qi=0;
+ quizStartedAt=performance.now();quizSaved=false;show('game');ask();
 };
 
 function renderPU(){
@@ -244,14 +265,12 @@ function answer(i){
  }else if(shield){saved=true}else me.streak=0;
  if(qi<Q.length-1){earned=roll(me.streak);inv[earned]++}
  me.log.push({q:q.q,mine:i>=0?q.o[i]:'No answer (time ran out)',right:q.o[q.a],ok});
- bots.forEach(b=>{if(Math.random()<b.skill)b.score+=Math.round(1000*(.55+Math.random()*.42))});
  hud();renderPU();
  const f=$('fb');f.className='card '+(ok?'ok':'no');
  $('fbi').textContent=ok?(me.streak>=3?'🔥':'🎉'):(i<0?'⏰':'😅');
  $('fbt').textContent=ok?(me.streak>=3?`${me.streak} in a row!`:'Correct!'):(i<0?'Time’s up!':'Not quite');
  $('fbg').textContent=ok?`+${gain.toLocaleString()} points${dbl?' (double points)':''}`:(saved?'🛡️ Streak shield kept your streak':'Correct answer: '+q.o[q.a]);
  $('fbe').textContent=q.e;
- const r=standings().findIndex(s=>s.me)+1;$('rank').textContent=`You’re in ${r}${['st','nd','rd'][r-1]||'th'} place`;
  $('next').textContent=qi<Q.length-1?'Next question':'See results';
  if(earned)setTimeout(()=>popup(earned,ok),700);
  f.classList.remove('hide');f.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -266,17 +285,52 @@ function popup(k,ok){const p=PU.find(x=>x[0]===k);
 $('mok').onclick=()=>{$('modal').classList.add('hide');$('next').focus()};
 $('next').onclick=()=>{qi++;qi<Q.length?ask():finish()};
 
-function standings(){return [{name:me.name,e:me.e,score:me.score,me:1},...bots].sort((a,b)=>b.score-a.score)}
-
 function finish(){
- const s=standings(),r=s.findIndex(x=>x.me)+1;
- $('eic').textContent=r===1?'🏆':r<=3?'🥈':'🚀';
- $('eh').textContent=r===1?'You won!':'Quiz complete!';
- $('erank').textContent=`You finished in ${r}${['st','nd','rd'][r-1]||'th'} place out of ${s.length}`;
- $('s1').textContent=me.score.toLocaleString();$('s2').textContent=Math.round(me.ok/Q.length*100)+'%';
- $('s3').textContent=me.best;$('s4').textContent=me.fast?me.fast.toFixed(1)+'s':'–';
- $('lb').innerHTML=s.map((x,i)=>`<div class="lbr${x.me?' me':''}"><span class="n">${i+1}</span><span class="e">${x.e}</span><span class="nm"></span><span class="sc">${x.score.toLocaleString()}</span></div>`).join('');
- [...$('lb').children].forEach((el,i)=>el.querySelector('.nm').textContent=s[i].name+(s[i].me?' (you)':''));
+ if(quizSaved)return;
+ quizSaved=true;
+ clearInterval(tmr);
+ const elapsedSeconds=Math.max(0,(performance.now()-quizStartedAt)/1000);
+ const accuracy=Math.round(me.ok/Q.length*100);
+ const creditsEarned=me.ok*10;
+ const report={
+  game:'Knowledge Check',
+  key:'quiz',
+  status:'completed',
+  outcome:'Quiz completed',
+  score:me.score,
+  elapsedSeconds,
+  creditsEarned,
+  details:{
+   playerName:me.name,
+   accuracy,
+   correctAnswers:me.ok,
+   totalQuestions:Q.length,
+   bestStreak:me.best,
+   fastestAnswer:me.fast,
+   answers:me.log
+  }
+ };
+ if(window.BeyondEarthHistory && typeof window.BeyondEarthHistory.record==='function'){
+  window.BeyondEarthHistory.record(report);
+ }else{
+  try{
+   const profile=JSON.parse(localStorage.getItem('beyondEarthProfile')||'{}');
+   profile.credits=Math.max(0,Number(profile.credits??300))+creditsEarned;
+   profile.missionHistory=Array.isArray(profile.missionHistory)?profile.missionHistory:[];
+   profile.missionHistory.unshift({...report,date:new Date().toISOString(),highScore:me.score});
+   localStorage.setItem('beyondEarthProfile',JSON.stringify(profile));
+  }catch(_){}
+ }
+ $('eic').textContent='🚀';
+ $('eh').textContent='Quiz complete!';
+ $('resultName').textContent=`Astronaut: ${me.name}`;
+ $('s1').textContent=me.score.toLocaleString();
+ $('s2').textContent=accuracy+'%';
+ $('s3').textContent=me.best;
+ $('s4').textContent=me.fast?me.fast.toFixed(1)+'s':'–';
+ $('s5').textContent=`${me.ok}/${Q.length}`;
+ $('s6').textContent=elapsedSeconds.toFixed(1)+'s';
+ $('s7').textContent='+'+creditsEarned;
  $('rev').innerHTML='';
  me.log.forEach((l,i)=>{const d=document.createElement('div');d.className=l.ok?'':'x';
   d.textContent=`${i+1}. ${l.q} — ${l.ok?'✓ '+l.right:'✗ '+l.mine+'. Correct: '+l.right}`;$('rev').appendChild(d)});
@@ -284,7 +338,7 @@ function finish(){
  $('pbar').style.width='100%';show('end');
 }
 $('revb').onclick=()=>{const h=$('rev').classList.toggle('hide');$('revb').textContent=h?'Review answers':'Hide review'};
-$('again').onclick=()=>show('start');
+$('again').onclick=()=>{clearInterval(tmr);$('quizPlayer').textContent='Astronaut: '+getPlayerName();show('start')};
 </script>
 </body>
 </html>
