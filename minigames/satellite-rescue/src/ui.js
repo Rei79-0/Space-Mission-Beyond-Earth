@@ -18,7 +18,7 @@ function drawMenu(){bgStars(0,0);X.fillStyle='#5fb8ff';X.beginPath();X.arc(52,92
  tx('CLICK A LEVEL OR PRESS 1-3',W/2,170,'#f0f0ff','center',6);btn(190,212,100,18,'CONTROLS',hv(190,212,100,18))}
 function menuClick(m){LV.forEach((L,i)=>{if(hv(30+i*145,62,130,96,m))startLevel(i)});if(hv(190,212,100,18,m))scene='guide'}
 function drawPause(){X.fillStyle='rgba(10,8,25,.78)';X.fillRect(0,0,W,H);box(130,56,220,150);tx('PAUSED',W/2,70,'#ffd23f','center',16);['RESUME','RESTART','EXIT LEVEL'].forEach((t,i)=>btn(170,104+i*30,140,24,t,hv(170,104+i*30,140,24)));tx('TIMER IS STOPPED',W/2,192,'#8fa0d8','center',6)}
-function pauseClick(m){for(let i=0;i<3;i++)if(hv(170,104+i*30,140,24,m)){if(i==0)scene=prev;else if(i==1)startLevel(lv);else scene='menu'}}
+function pauseClick(m){for(let i=0;i<3;i++)if(hv(170,104+i*30,140,24,m)){if(i==0)scene=prev;else if(i==1)startLevel(lv);else window.location.assign('../../index.html?returnToDashboard=1')}}
 function drawIntro(){const L=LV[lv];X.fillStyle='rgba(10,8,25,.8)';X.fillRect(0,0,W,H);box(40,80,400,110);tx('LEVEL '+(lv+1)+' / '+LV.length,W/2,94,'#8fa0d8','center');tx(L.name,W/2,110,'#ffd23f','center',12);tx(L.sub,W/2,132,'#f0f0ff','center');tx(L.mars?'FIND 3 KEYS. OPEN THE BUNKER. GET THE INTEL.':'REPAIR THE SATELLITE AND TOW IT HOME',W/2,148,'#8fa0d8','center');
  for(let i=0;i<LV.length;i++){X.fillStyle=i<lv?'#2ecc71':i==lv?'#ffd23f':'#3a3a70';X.fillRect(W/2-22+i*16,166,12,6)}if(Math.floor(tk*2)%2)tx('CLICK / ENTER TO START',W/2,178,'#2ecc71','center',6)}
 function tx(s,x,y,col,al,sz){X.font=(sz||8)+'px '+F;X.fillStyle=col||'#f0f0ff';X.textAlign=al||'left';X.textBaseline='top';X.fillText(s,x,y)}
