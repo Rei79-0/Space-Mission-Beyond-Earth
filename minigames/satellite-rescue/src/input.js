@@ -3,13 +3,12 @@ const PLAYING=['play','quiz','puzzle','dnd','code'];
 function onKey(k){
  if(scene=='guide'){if(k=='enter'||k==' ')scene='menu';else if(k=='escape')scene='menu';return}
  if(scene=='menu'){
-  if(campaignData()&&campaignData().stage===2){startLevel(0);return;}
-  if(k=='escape'){window.location.assign('../../index.html');return}
+  if(k=='escape'){if(res.slice(0,LV.length).length===LV.length&&res.slice(0,LV.length).every(Boolean)){completeSatelliteCampaign();}else{window.location.assign('../../index.html?returnToDashboard=1');}return}
   if(k.length==1&&'123'.includes(k))startLevel(+k-1);
   return;
  }
  if(scene=='intro'){if(k=='enter'||k==' ')scene='play';return}
- if(k=='escape'){if(scene=='pause')scene=prev;else if(PLAYING.includes(scene)){prev=scene;scene='pause';drag=-1}return}
+ if(k=='escape'){if(scene=='pause')scene=prev;else if(scene=='result'||scene=='final'){if(res.slice(0,LV.length).length===LV.length&&res.slice(0,LV.length).every(Boolean))completeSatelliteCampaign();else window.location.assign('../../index.html?returnToDashboard=1');}else if(PLAYING.includes(scene)){prev=scene;scene='pause';drag=-1}return}
  if(scene=='pause'){if(k=='r')startLevel(lv);return}
  if(scene=='play'&&k=='e')interact();
  else if(scene=='quiz'&&k.length==1&&'1234'.includes(k))answer(+k-1);
