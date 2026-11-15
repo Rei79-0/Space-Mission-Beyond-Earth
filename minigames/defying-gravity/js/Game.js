@@ -132,7 +132,7 @@ class Game {
       this.saveBest();
     }
 
-    if (this.isCampaign() && !this.stageHistorySaved) {
+    if (!this.stageHistorySaved) {
       this.stageHistorySaved = true;
       const elapsedSeconds = this.elapsedSeconds;
       if (window.BeyondEarthHistory) {
@@ -144,10 +144,11 @@ class Game {
           score: this.score,
           highScore: this.best,
           elapsedSeconds,
+          creditsEarned: Math.min(100, Math.max(10, this.score * 5)),
           details: { scoreAtFailure: this.score, bestScore: this.best }
         });
       }
-      // Let the player see the game-over score briefly, then return to the dashboard.
+      // Every attempt returns to the dashboard after the result is shown.
       this.returnTimer = setTimeout(() => this.returnToDashboard(), 2200);
     }
   }
