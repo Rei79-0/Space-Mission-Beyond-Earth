@@ -31,10 +31,12 @@
       highScore,
       elapsedSeconds: Math.max(0, Number(entry.elapsedSeconds) || 0),
       details: entry.details || {},
+      creditsEarned: Math.max(0, Number(entry.creditsEarned) || 0),
       date: new Date().toISOString()
     };
     history.unshift(report);
     profile.missionHistory = history.slice(0, 100);
+    if (report.creditsEarned > 0) profile.credits = Math.max(0, Number(profile.credits ?? 300)) + report.creditsEarned;
     records[key] = {
       highScore,
       attempts: (Number(previous.attempts) || 0) + 1,
